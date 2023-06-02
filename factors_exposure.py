@@ -2,6 +2,8 @@ from algs.factor_exposure_basis import fac_exp_alg_basis, fac_exp_alg_basis_ma_a
 from algs.factor_exposure_ts import fac_exp_alg_ts, fac_exp_alg_ts_ma_and_diff
 from algs.factor_exposure_mtm import fac_exp_alg_mtm
 from algs.factor_exposure_skew import fac_exp_alg_skew
+from algs.factor_exposure_sgm import fac_exp_alg_sgm
+from algs.factor_exposure_to import fac_exp_alg_to
 import multiprocessing as mp
 import datetime as dt
 import itertools as ittl
@@ -129,6 +131,62 @@ def cal_fac_exp_skew_mp(proc_num: int,
         pool.apply_async(
             fac_exp_alg_skew,
             args=(run_mode, bgn_date, stp_date, skew_window,
+                  instruments_universe,
+                  database_structure,
+                  major_return_dir,
+                  factors_exposure_dir,
+                  ),
+        )
+    pool.close()
+    pool.join()
+
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
+
+
+def cal_fac_exp_sgm_mp(proc_num: int,
+                       run_mode: str, bgn_date: str, stp_date: str,
+                       sgm_windows: list[int],
+                       instruments_universe: list[str],
+                       database_structure: dict,
+                       major_return_dir: str,
+                       factors_exposure_dir: str,
+                       ):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for sgm_window in sgm_windows:
+        pool.apply_async(
+            fac_exp_alg_sgm,
+            args=(run_mode, bgn_date, stp_date, sgm_window,
+                  instruments_universe,
+                  database_structure,
+                  major_return_dir,
+                  factors_exposure_dir,
+                  ),
+        )
+    pool.close()
+    pool.join()
+
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
+
+
+def cal_fac_exp_to_mp(proc_num: int,
+                      run_mode: str, bgn_date: str, stp_date: str,
+                      to_windows: list[int],
+                      instruments_universe: list[str],
+                      database_structure: dict,
+                      major_return_dir: str,
+                      factors_exposure_dir: str,
+                      ):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for sgm_window in to_windows:
+        pool.apply_async(
+            fac_exp_alg_to,
+            args=(run_mode, bgn_date, stp_date, sgm_window,
                   instruments_universe,
                   database_structure,
                   major_return_dir,
