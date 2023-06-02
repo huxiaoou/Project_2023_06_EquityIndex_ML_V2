@@ -26,11 +26,11 @@ def fac_exp_alg_basis(
     # --- init major contracts
     all_factor_dfs = []
     for instrument in instruments_universe:
-        major_return_file = "major_minor.{}.csv.gz".format(instrument)
+        major_return_file = "major_return.{}.close.csv.gz".format(instrument)
         major_return_path = os.path.join(major_return_dir, major_return_file)
-        major_return_df = pd.read_csv(major_return_path, dtype=str).set_index("trade_date")
+        major_return_df = pd.read_csv(major_return_path, dtype={"trade_date": str}).set_index("trade_date")
         fiter_dates = (major_return_df.index >= bgn_date) & (major_return_df.index < stp_date)
-        selected_major_return_df = major_return_df.loc[fiter_dates, ["n_contract", "close"]]
+        selected_major_return_df = major_return_df.loc[fiter_dates, ["n_contract", "close"]].round(2)
 
         equity_index_code = equity_index_code_mapper[instrument]
         spot_data_file = "{}.csv".format(equity_index_code)
@@ -50,6 +50,7 @@ def fac_exp_alg_basis(
 
     # --- reorganize
     all_factor_df = pd.concat(all_factor_dfs, axis=0, ignore_index=False)
+    all_factor_df.sort_index(inplace=True)
 
     # --- save
     factor_lib_structure = database_structure[factor_lbl]
