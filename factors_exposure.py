@@ -1,7 +1,9 @@
 from algs.factor_exposure_basis import fac_exp_alg_basis, fac_exp_alg_basis_ma_and_diff
 from algs.factor_exposure_ts import fac_exp_alg_ts, fac_exp_alg_ts_ma_and_diff
+from algs.factor_exposure_mtm import fac_exp_alg_mtm
 import multiprocessing as mp
 import datetime as dt
+import itertools as ittl
 
 
 def cal_fac_exp_basis_mp(proc_num: int,
@@ -73,6 +75,34 @@ def cal_fac_exp_ts_mp(proc_num: int,
                   instruments_universe,
                   calendar_path,
                   database_structure,
+                  factors_exposure_dir,
+                  ),
+        )
+    pool.close()
+    pool.join()
+
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
+
+
+def cal_fac_exp_mtm_mp(proc_num: int,
+                       run_mode: str, bgn_date: str, stp_date: str,
+                       mtm_windows: list[int],
+                       instruments_universe: list[str],
+                       database_structure: dict,
+                       major_return_dir: str,
+                       factors_exposure_dir: str,
+                       ):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for mtm_window, tag_adj in ittl.product(mtm_windows, (False, True)):
+        pool.apply_async(
+            fac_exp_alg_mtm,
+            args=(run_mode, bgn_date, stp_date, mtm_window, tag_adj,
+                  instruments_universe,
+                  database_structure,
+                  major_return_dir,
                   factors_exposure_dir,
                   ),
         )
