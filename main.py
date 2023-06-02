@@ -28,7 +28,7 @@ if __name__ == "__main__":
     factor = args.factor.lower()
     run_mode, bgn_date, stp_date = "o", "20160101", "20230529"
 
-    if switch == "test_returns":
+    if switch in ["tr", "test_returns"]:
         cal_test_returns_mp(
             proc_num=5,
             run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
@@ -43,7 +43,7 @@ if __name__ == "__main__":
             futures_em01_db_name=futures_em01_db_name,
         )
 
-    elif switch == "factors_exposure":
+    elif switch in ["fe", "factors_exposure"]:
         if factor == "basis":
             cal_fac_exp_basis_mp(
                 proc_num=5,
