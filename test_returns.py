@@ -34,6 +34,8 @@ def cal_test_returns_for_test_window(
 
 ):
     calendar = CCalendar(calendar_path)
+    if stp_date is None:
+        stp_date = (dt.datetime.strptime(bgn_date, "%Y%m%d") + dt.timedelta(days=1)).strftime("%Y%m%d")
 
     # --- init major contracts
     major_minor_manager = {}

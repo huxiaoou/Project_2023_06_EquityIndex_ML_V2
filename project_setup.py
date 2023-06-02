@@ -47,6 +47,7 @@ futures_em01_db_name = global_config["futures"]["em01_db_name"]
 
 futures_by_instrument_dir = os.path.join(futures_dir, global_config["futures"]["by_instrument_dir"])
 major_minor_dir = os.path.join(futures_by_instrument_dir, global_config["futures"]["major_minor_dir"])
+major_return_dir = os.path.join(futures_by_instrument_dir, global_config["futures"]["major_return_dir"])
 md_by_instru_dir = os.path.join(futures_by_instrument_dir, global_config["futures"]["md_by_instru_dir"])
 
 # --- equity
@@ -62,6 +63,7 @@ research_data_root_dir = "/ProjectsData"
 research_project_name = os.getcwd().split("\\")[-1]
 research_project_data_dir = os.path.join(research_data_root_dir, research_project_name)
 research_test_returns_dir = os.path.join(research_project_data_dir, "test_returns")
+research_factors_exposure_dir = os.path.join(research_project_data_dir, "factors_exposure")
 
 if __name__ == "__main__":
     from skyrim.winterhold import check_and_mkdir
@@ -69,5 +71,6 @@ if __name__ == "__main__":
     check_and_mkdir(research_data_root_dir)
     check_and_mkdir(research_project_data_dir)
     check_and_mkdir(research_test_returns_dir)
+    check_and_mkdir(research_factors_exposure_dir)
 
     print("... directory system for this project has been established.")
