@@ -26,11 +26,12 @@ if __name__ == "__main__":
     args = args_parser.parse_args()
     switch = args.switch.lower()
     factor = args.factor.lower()
+    run_mode, bgn_date, stp_date = "o", "20160101", "20230529"
 
     if switch == "test_returns":
         cal_test_returns_mp(
             proc_num=5,
-            run_mode="o", bgn_date="20160101", stp_date="20230529",
+            run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
             test_windows=test_windows,
             instruments_universe=instruments_universe,
             database_structure=database_structure,
@@ -46,13 +47,14 @@ if __name__ == "__main__":
         if factor == "basis":
             cal_fac_exp_basis_mp(
                 proc_num=5,
-                run_mode="o", bgn_date="20160101", stp_date="20230529",
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
                 basis_windows=factors_args["basis_windows"],
                 instruments_universe=instruments_universe,
                 database_structure=database_structure,
                 major_return_dir=major_return_dir,
                 equity_index_by_instrument_dir=equity_index_by_instrument_dir,
                 factors_exposure_dir=research_factors_exposure_dir,
+                calendar_path=calendar_path,
             )
 
     else:

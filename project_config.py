@@ -14,7 +14,7 @@ factors_args = {
     "basis_windows": [21, 63, 126, 252],
 }
 basis_windows = factors_args["basis_windows"]
-fac_sub_grp_basis = ["BASIS"] + ["BASIS{:03d}".format(_) for _ in basis_windows] + ["BASIS-D{:03d}".format(_) for _ in basis_windows]
+fac_sub_grp_basis = ["BASIS"] + ["BASIS_M{:03d}".format(_) for _ in basis_windows] + ["BASIS_D{:03d}".format(_) for _ in basis_windows]
 factors = fac_sub_grp_basis
 
 # --- simulation

@@ -11,7 +11,7 @@ database_structure.update({
         t_tab=CTable({
             "table_name": z,
             "primary_keys": {"trade_date": "TEXT", "instrument": "TEXT"},
-            "value_columns": {z: "REAL"},
+            "value_columns": {"value": "REAL"},
         })
     ) for z in test_return_lbls})
 
@@ -21,7 +21,7 @@ database_structure.update({
         t_tab=CTable({
             "table_name": z,
             "primary_keys": {"trade_date": "TEXT", "instrument": "TEXT"},
-            "value_columns": {z: "REAL"},
+            "value_columns": {"value": "REAL"},
         })
     ) for z in factors
 })

@@ -1,11 +1,14 @@
 import os
 import datetime as dt
 import pandas as pd
-from skyrim.falkreath import CManagerLibWriterByDate, CLib1Tab1
+from skyrim.whiterun import CCalendar
+from skyrim.falkreath import CLib1Tab1
+from skyrim.falkreath import CManagerLibReader
+from skyrim.falkreath import CManagerLibWriter
 
 
 def fac_exp_alg_basis(
-        run_mode: str, bgn_date: str, stp_date: str,
+        run_mode: str, bgn_date: str, stp_date: str | None,
         instruments_universe: list[str],
         database_structure: dict[str, CLib1Tab1],
         major_return_dir: str,
@@ -54,7 +57,7 @@ def fac_exp_alg_basis(
 
     # --- save
     factor_lib_structure = database_structure[factor_lbl]
-    factor_lib = CManagerLibWriterByDate(
+    factor_lib = CManagerLibWriter(
         t_db_name=factor_lib_structure.m_lib_name,
         t_db_save_dir=factors_exposure_dir
     )
@@ -63,4 +66,78 @@ def fac_exp_alg_basis(
     factor_lib.close()
 
     print("... @ {} factor = {:>12s} calculated".format(dt.datetime.now(), factor_lbl))
+    return 0
+
+
+def fac_exp_alg_basis_ma_and_diff(
+        run_mode: str, bgn_date: str, stp_date: str | None, basis_window: int,
+        instruments_universe: list[str],
+        calendar_path: str,
+        database_structure: dict[str, CLib1Tab1],
+        factors_exposure_dir: str,
+):
+    src_lbl = "BASIS"
+    factor_lbl_ma, factor_lbl_diff = "BASIS_M{:03d}".format(basis_window), "BASIS_D{:03d}".format(basis_window)
+
+    if stp_date is None:
+        stp_date = (dt.datetime.strptime(bgn_date, "%Y%m%d") + dt.timedelta(days=1)).strftime("%Y%m%d")
+
+    calendar = CCalendar(calendar_path)
+
+    # --- init reader
+    src_lib_structure = database_structure[src_lbl]
+    src_lib = CManagerLibReader(
+        t_db_name=src_lib_structure.m_lib_name,
+        t_db_save_dir=factors_exposure_dir
+    )
+    src_lib.set_default(t_default_table_name=src_lib_structure.m_tab.m_table_name)
+
+    # --- init ma writer
+    ma_lib_structure = database_structure[factor_lbl_ma]
+    ma_lib = CManagerLibWriter(
+        t_db_name=ma_lib_structure.m_lib_name,
+        t_db_save_dir=factors_exposure_dir,
+    )
+    ma_lib.initialize_table(t_table=ma_lib_structure.m_tab, t_remove_existence=run_mode in ["O", "OVERWRITE"])
+
+    # --- init diff writer
+    diff_lib_structure = database_structure[factor_lbl_diff]
+    diff_lib = CManagerLibWriter(
+        t_db_name=diff_lib_structure.m_lib_name,
+        t_db_save_dir=factors_exposure_dir,
+    )
+    diff_lib.initialize_table(t_table=diff_lib_structure.m_tab, t_remove_existence=run_mode in ["O", "OVERWRITE"])
+
+    # --- load hist and calculate
+    iter_dates = calendar.get_iter_list(bgn_date, stp_date, True)
+    base_date = calendar.get_next_date(iter_dates[0], -basis_window + 1)
+    src_df = src_lib.read_by_conditions(
+        t_conditions=[
+            ("trade_date", ">=", base_date),
+            ("trade_date", "<", stp_date),
+        ], t_value_columns=["trade_date", "instrument", "value"],
+    ).set_index("trade_date")
+
+    ma_dfs, diff_dfs = [], []
+    for instrument, instrument_df in src_df.groupby(by="instrument"):
+        if instrument not in instruments_universe:
+            continue
+        res_df = instrument_df.sort_index(ascending=True)
+        res_df["ma"] = res_df["value"].rolling(window=basis_window).mean()
+        res_df["diff"] = res_df["value"] - res_df["ma"]
+        ma_dfs.append(res_df[["instrument", "ma"]])
+        diff_dfs.append(res_df[["instrument", "diff"]])
+    ma_df = pd.concat(ma_dfs, axis=0, ignore_index=False).sort_index(ascending=True)
+    diff_df = pd.concat(diff_dfs, axis=0, ignore_index=False).sort_index(ascending=True)
+    ma_df = ma_df.loc[ma_df.index >= bgn_date]
+    diff_df = diff_df.loc[diff_df.index >= bgn_date]
+    ma_lib.update(t_update_df=ma_df, t_using_index=True)
+    diff_lib.update(t_update_df=diff_df, t_using_index=True)
+
+    src_lib.close()
+    ma_lib.close()
+    diff_lib.close()
+
+    print("... @ {} factor = {:>12s} calculated".format(dt.datetime.now(), factor_lbl_ma))
+    print("... @ {} factor = {:>12s} calculated".format(dt.datetime.now(), factor_lbl_diff))
     return 0
