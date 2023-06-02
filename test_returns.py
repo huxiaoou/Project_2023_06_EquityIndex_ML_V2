@@ -1,7 +1,6 @@
 import os
 import json
 import datetime as dt
-import itertools as ittl
 import multiprocessing as mp
 import numpy as np
 import pandas as pd

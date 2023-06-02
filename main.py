@@ -12,7 +12,7 @@ from project_setup import futures_md_dir
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description="Entry point to run all")
-    args_parser.add_argument("-s", "--switch", type=str, help="use this to decide which parts to run, available options = ['test_return']")
+    args_parser.add_argument("-s", "--switch", type=str, help="use this to decide which parts to run, available options = ['test_returns']")
     args = args_parser.parse_args()
     switch = args.switch
 
