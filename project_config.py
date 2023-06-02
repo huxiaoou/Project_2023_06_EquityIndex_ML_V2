@@ -7,20 +7,7 @@ equity_indexes = (
     ("000905.SH", "IC.CFE"),
 )
 
-sqlite3_tables = {
-    "features_and_return": {
-        "table_name": "features_and_return",
-        "primary_keys": {
-            "trade_date": "TEXT",
-            "instrument": "TEXT",
-            "contract": "TEXT",
-            "tid": "TEXT",
-            "timestamp": "INT4",
-        },
-        "value_columns": {"value": "REAL"}
-    },
-
-}
+test_windows = [1, 2, 3, 5, 10]
 
 # --- simulation
 cost_rate = 5e-4
