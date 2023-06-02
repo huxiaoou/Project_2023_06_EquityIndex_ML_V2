@@ -24,9 +24,9 @@ if __name__ == "__main__":
             instruments_universe=instruments_universe,
             database_structure=database_structure,
             test_returns_dir=research_test_returns_dir,
-            calendar_path=calendar_path,
             major_minor_dir=major_minor_dir,
+            futures_md_dir=futures_md_dir,
+            calendar_path=calendar_path,
             futures_md_structure_path=futures_md_structure_path,
             futures_em01_db_name=futures_em01_db_name,
-            futures_md_dir=futures_md_dir
         )
