@@ -5,14 +5,15 @@ from skyrim.falkreath import CLib1Tab1
 from skyrim.falkreath import CManagerLibWriter
 
 
-def fac_exp_alg_to(
-        run_mode: str, bgn_date: str, stp_date: str | None, to_window: int,
+def fac_exp_alg_amt(
+        run_mode: str, bgn_date: str, stp_date: str | None, amt_window: int,
         instruments_universe: list[str],
         database_structure: dict[str, CLib1Tab1],
         major_return_dir: str,
         factors_exposure_dir: str,
+        money_scale: int,
 ):
-    factor_lbl = "TO{:03d}".format(to_window)
+    factor_lbl = "AMT{:03d}".format(amt_window)
     if stp_date is None:
         stp_date = (dt.datetime.strptime(bgn_date, "%Y%m%d") + dt.timedelta(days=1)).strftime("%Y%m%d")
 
@@ -22,8 +23,7 @@ def fac_exp_alg_to(
         major_return_file = "major_return.{}.close.csv.gz".format(instrument)
         major_return_path = os.path.join(major_return_dir, major_return_file)
         major_return_df = pd.read_csv(major_return_path, dtype={"trade_date": str}).set_index("trade_date")
-        major_return_df[factor_lbl] = major_return_df["volume"] / major_return_df["oi"]
-        major_return_df[factor_lbl] = major_return_df[factor_lbl].rolling(window=to_window).mean()
+        major_return_df[factor_lbl] = major_return_df["amount"].rolling(window=amt_window).mean() / money_scale
         fiter_dates = (major_return_df.index >= bgn_date) & (major_return_df.index < stp_date)
         factor_df = major_return_df.loc[fiter_dates, [factor_lbl]].copy()
         factor_df["instrument"] = instrument

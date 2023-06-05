@@ -12,12 +12,13 @@ from project_setup import futures_md_dir
 from project_setup import equity_index_by_instrument_dir
 from project_setup import research_test_returns_dir
 from project_setup import research_factors_exposure_dir
+from factors_exposure import cal_fac_exp_amt_mp
 from factors_exposure import cal_fac_exp_basis_mp
-from factors_exposure import cal_fac_exp_ts_mp
 from factors_exposure import cal_fac_exp_mtm_mp
-from factors_exposure import cal_fac_exp_skew_mp
 from factors_exposure import cal_fac_exp_sgm_mp
+from factors_exposure import cal_fac_exp_skew_mp
 from factors_exposure import cal_fac_exp_to_mp
+from factors_exposure import cal_fac_exp_ts_mp
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description="Entry point to run all")
@@ -49,7 +50,17 @@ if __name__ == "__main__":
         )
 
     elif switch in ["fe", "factors_exposure"]:
-        if factor == "basis":
+        if factor == "amt":
+            cal_fac_exp_amt_mp(
+                proc_num=5,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                amt_windows=factors_args["amt_windows"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                major_return_dir=major_return_dir,
+                factors_exposure_dir=research_factors_exposure_dir,
+            )
+        elif factor == "basis":
             cal_fac_exp_basis_mp(
                 proc_num=5,
                 run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
@@ -61,19 +72,6 @@ if __name__ == "__main__":
                 factors_exposure_dir=research_factors_exposure_dir,
                 calendar_path=calendar_path,
             )
-        elif factor == "ts":
-            cal_fac_exp_ts_mp(
-                proc_num=5,
-                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
-                ts_windows=factors_args["ts_windows"],
-                instruments_universe=instruments_universe,
-                database_structure=database_structure,
-                major_minor_dir=major_minor_dir,
-                md_dir=md_by_instru_dir,
-                factors_exposure_dir=research_factors_exposure_dir,
-                calendar_path=calendar_path,
-                price_type="close",
-            )
         elif factor == "mtm":
             cal_fac_exp_mtm_mp(
                 proc_num=5,
@@ -84,21 +82,21 @@ if __name__ == "__main__":
                 major_return_dir=major_return_dir,
                 factors_exposure_dir=research_factors_exposure_dir,
             )
-        elif factor == "skew":
-            cal_fac_exp_skew_mp(
-                proc_num=5,
-                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
-                skew_windows=factors_args["skew_windows"],
-                instruments_universe=instruments_universe,
-                database_structure=database_structure,
-                major_return_dir=major_return_dir,
-                factors_exposure_dir=research_factors_exposure_dir
-            )
         elif factor == "sgm":
             cal_fac_exp_sgm_mp(
                 proc_num=5,
                 run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
                 sgm_windows=factors_args["sgm_windows"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                major_return_dir=major_return_dir,
+                factors_exposure_dir=research_factors_exposure_dir
+            )
+        elif factor == "skew":
+            cal_fac_exp_skew_mp(
+                proc_num=5,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                skew_windows=factors_args["skew_windows"],
                 instruments_universe=instruments_universe,
                 database_structure=database_structure,
                 major_return_dir=major_return_dir,
@@ -113,6 +111,19 @@ if __name__ == "__main__":
                 database_structure=database_structure,
                 major_return_dir=major_return_dir,
                 factors_exposure_dir=research_factors_exposure_dir
+            )
+        elif factor == "ts":
+            cal_fac_exp_ts_mp(
+                proc_num=5,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                ts_windows=factors_args["ts_windows"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                major_minor_dir=major_minor_dir,
+                md_dir=md_by_instru_dir,
+                factors_exposure_dir=research_factors_exposure_dir,
+                calendar_path=calendar_path,
+                price_type="close",
             )
         else:
             print("... factor = {} is not a legal option, please check again".format(factor))
