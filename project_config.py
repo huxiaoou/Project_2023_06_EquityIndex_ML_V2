@@ -5,6 +5,8 @@ equity_indexes = (
     ("000016.SH", "IH.CFE"),
     ("000300.SH", "IF.CFE"),
     ("000905.SH", "IC.CFE"),
+    ("000852.SH", "IM.CFE"),
+    ("881001.WI", None),
 )
 
 test_windows = [1, 2, 3, 5, 10]

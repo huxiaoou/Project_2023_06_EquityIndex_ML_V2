@@ -1,5 +1,6 @@
 import argparse
 from test_returns import cal_test_returns_mp
+from project_config import equity_indexes
 from project_config import instruments_universe
 from project_config import test_windows
 from project_config import factors_args
@@ -12,6 +13,7 @@ from project_setup import futures_md_dir
 from project_setup import equity_index_by_instrument_dir
 from project_setup import research_test_returns_dir
 from project_setup import research_factors_exposure_dir
+from misc import split_spot_daily_k
 from factors_exposure import cal_fac_exp_amt_mp
 from factors_exposure import cal_fac_exp_basis_mp
 from factors_exposure import cal_fac_exp_mtm_mp
@@ -35,7 +37,9 @@ if __name__ == "__main__":
     factor = args.factor.lower()
     run_mode, bgn_date, stp_date = "o", "20160101", "20230529"
 
-    if switch in ["tr", "test_returns"]:
+    if switch in ["pp", "preprocess"]:
+        split_spot_daily_k(equity_index_by_instrument_dir, equity_indexes)
+    elif switch in ["tr", "test_returns"]:
         cal_test_returns_mp(
             proc_num=5,
             run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
