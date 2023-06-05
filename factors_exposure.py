@@ -4,6 +4,7 @@ import multiprocessing as mp
 from algs.factor_exposure_amt import fac_exp_alg_amt
 from algs.factor_exposure_basis import fac_exp_alg_basis, fac_exp_alg_basis_ma_and_diff
 from algs.factor_exposure_beta import fac_exp_alg_beta, fac_exp_alg_beta_diff
+from algs.factor_exposure_cx import fac_exp_alg_cx
 from algs.factor_exposure_mtm import fac_exp_alg_mtm
 from algs.factor_exposure_sgm import fac_exp_alg_sgm
 from algs.factor_exposure_size import fac_exp_alg_size
@@ -97,6 +98,31 @@ def cal_fac_exp_beta_mp(proc_num: int,
                                calendar_path,
                                database_structure,
                                factors_exposure_dir))
+    pool.close()
+    pool.join()
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
+
+
+def cal_fac_exp_cx_mp(proc_num: int,
+                      run_mode: str, bgn_date: str, stp_date: str,
+                      mgr_cx_windows: dict[str, list[int]], top_props: list[float],
+                      instruments_universe: list[str],
+                      database_structure: dict,
+                      major_return_dir: str,
+                      factors_exposure_dir: str):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for cx, cx_windows in mgr_cx_windows.items():
+        for cx_window, top_prop in ittl.product(cx_windows, top_props):
+            pool.apply_async(fac_exp_alg_cx,
+                             args=(run_mode, bgn_date, stp_date,
+                                   cx, cx_window, top_prop,
+                                   instruments_universe,
+                                   database_structure,
+                                   major_return_dir,
+                                   factors_exposure_dir))
     pool.close()
     pool.join()
     t1 = dt.datetime.now()

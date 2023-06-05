@@ -4,6 +4,7 @@ from project_config import equity_indexes
 from project_config import instruments_universe
 from project_config import test_windows
 from project_config import factors_args
+from project_config import manager_cx_windows
 from struct_lib import database_structure
 from project_setup import calendar_path
 from project_setup import major_minor_dir, major_return_dir, md_by_instru_dir
@@ -17,6 +18,7 @@ from misc import split_spot_daily_k
 from factors_exposure import cal_fac_exp_amt_mp
 from factors_exposure import cal_fac_exp_basis_mp
 from factors_exposure import cal_fac_exp_beta_mp
+from factors_exposure import cal_fac_exp_cx_mp
 from factors_exposure import cal_fac_exp_mtm_mp
 from factors_exposure import cal_fac_exp_sgm_mp
 from factors_exposure import cal_fac_exp_size_mp
@@ -89,6 +91,16 @@ if __name__ == "__main__":
                 equity_index_by_instrument_dir=equity_index_by_instrument_dir,
                 factors_exposure_dir=research_factors_exposure_dir,
                 calendar_path=calendar_path,
+            )
+        elif factor == "cx":
+            cal_fac_exp_cx_mp(
+                proc_num=5,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                mgr_cx_windows=manager_cx_windows, top_props=factors_args["top_props"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                major_return_dir=major_return_dir,
+                factors_exposure_dir=research_factors_exposure_dir
             )
         elif factor == "mtm":
             cal_fac_exp_mtm_mp(
