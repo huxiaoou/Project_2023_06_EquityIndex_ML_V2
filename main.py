@@ -16,6 +16,7 @@ from project_setup import research_factors_exposure_dir
 from misc import split_spot_daily_k
 from factors_exposure import cal_fac_exp_amt_mp
 from factors_exposure import cal_fac_exp_basis_mp
+from factors_exposure import cal_fac_exp_beta_mp
 from factors_exposure import cal_fac_exp_mtm_mp
 from factors_exposure import cal_fac_exp_sgm_mp
 from factors_exposure import cal_fac_exp_size_mp
@@ -53,7 +54,6 @@ if __name__ == "__main__":
             futures_md_structure_path=futures_md_structure_path,
             futures_em01_db_name=futures_em01_db_name,
         )
-
     elif switch in ["fe", "factors_exposure"]:
         if factor == "amt":
             cal_fac_exp_amt_mp(
@@ -71,6 +71,18 @@ if __name__ == "__main__":
                 proc_num=5,
                 run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
                 basis_windows=factors_args["basis_windows"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                major_return_dir=major_return_dir,
+                equity_index_by_instrument_dir=equity_index_by_instrument_dir,
+                factors_exposure_dir=research_factors_exposure_dir,
+                calendar_path=calendar_path,
+            )
+        elif factor == "beta":
+            cal_fac_exp_beta_mp(
+                proc_num=5,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                beta_windows=factors_args["beta_windows"],
                 instruments_universe=instruments_universe,
                 database_structure=database_structure,
                 major_return_dir=major_return_dir,

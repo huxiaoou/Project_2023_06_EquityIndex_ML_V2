@@ -3,6 +3,7 @@ import itertools as ittl
 import multiprocessing as mp
 from algs.factor_exposure_amt import fac_exp_alg_amt
 from algs.factor_exposure_basis import fac_exp_alg_basis, fac_exp_alg_basis_ma_and_diff
+from algs.factor_exposure_beta import fac_exp_alg_beta, fac_exp_alg_beta_diff
 from algs.factor_exposure_mtm import fac_exp_alg_mtm
 from algs.factor_exposure_sgm import fac_exp_alg_sgm
 from algs.factor_exposure_size import fac_exp_alg_size
@@ -56,6 +57,42 @@ def cal_fac_exp_basis_mp(proc_num: int,
     for p_window in basis_windows:
         pool.apply_async(fac_exp_alg_basis_ma_and_diff,
                          args=(run_mode, bgn_date, stp_date, p_window,
+                               instruments_universe,
+                               calendar_path,
+                               database_structure,
+                               factors_exposure_dir))
+    pool.close()
+    pool.join()
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
+
+
+def cal_fac_exp_beta_mp(proc_num: int,
+                        run_mode: str, bgn_date: str, stp_date: str,
+                        beta_windows: list[int],
+                        instruments_universe: list[str],
+                        database_structure: dict,
+                        major_return_dir: str,
+                        equity_index_by_instrument_dir: str,
+                        factors_exposure_dir: str,
+                        calendar_path: str):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for p_window in beta_windows:
+        pool.apply_async(fac_exp_alg_beta,
+                         args=(run_mode, bgn_date, stp_date, p_window,
+                               instruments_universe,
+                               database_structure,
+                               major_return_dir,
+                               equity_index_by_instrument_dir,
+                               factors_exposure_dir))
+    pool.close()
+    pool.join()
+    pool = mp.Pool(processes=proc_num)
+    for p_window in beta_windows[1:]:
+        pool.apply_async(fac_exp_alg_beta_diff,
+                         args=(run_mode, bgn_date, stp_date, p_window, beta_windows[0],
                                instruments_universe,
                                calendar_path,
                                database_structure,
