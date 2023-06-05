@@ -16,6 +16,7 @@ from factors_exposure import cal_fac_exp_amt_mp
 from factors_exposure import cal_fac_exp_basis_mp
 from factors_exposure import cal_fac_exp_mtm_mp
 from factors_exposure import cal_fac_exp_sgm_mp
+from factors_exposure import cal_fac_exp_size_mp
 from factors_exposure import cal_fac_exp_skew_mp
 from factors_exposure import cal_fac_exp_to_mp
 from factors_exposure import cal_fac_exp_ts_mp
@@ -59,6 +60,7 @@ if __name__ == "__main__":
                 database_structure=database_structure,
                 major_return_dir=major_return_dir,
                 factors_exposure_dir=research_factors_exposure_dir,
+                money_scale=10000
             )
         elif factor == "basis":
             cal_fac_exp_basis_mp(
@@ -87,6 +89,16 @@ if __name__ == "__main__":
                 proc_num=5,
                 run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
                 sgm_windows=factors_args["sgm_windows"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                major_return_dir=major_return_dir,
+                factors_exposure_dir=research_factors_exposure_dir
+            )
+        elif factor == "size":
+            cal_fac_exp_size_mp(
+                proc_num=5,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                size_windows=factors_args["size_windows"],
                 instruments_universe=instruments_universe,
                 database_structure=database_structure,
                 major_return_dir=major_return_dir,
