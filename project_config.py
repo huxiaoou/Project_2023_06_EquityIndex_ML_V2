@@ -8,11 +8,15 @@ equity_indexes = (
     ("000852.SH", "IM.CFE"),
     ("881001.WI", None),
 )
+mapper_index_to_futures = {k: v for k, v in equity_indexes}
+mapper_futures_to_index = {v: k for k, v in equity_indexes}
 
 test_windows = [1, 2, 3, 5, 10]
 
 # --- factors
 factors_args = {
+    "amt_windows": [21, 63, 126, 252],
+    "amp_windows": [21, 63, 126, 252],
     "basis_windows": [21, 63, 126, 252],
     "beta_windows": [21, 63, 126, 252],
     "csp_windows": [21, 63, 126, 252],
@@ -21,17 +25,18 @@ factors_args = {
     "ctr_windows": [21, 63, 126, 252],
     "cvp_windows": [21, 63, 126, 252],
     "cvr_windows": [21, 63, 126, 252],
-    "ts_windows": [21, 63, 126, 252],
     "mtm_windows": [21, 63, 126, 252],
-    "skew_windows": [21, 63, 126, 252],
-    "amt_windows": [21, 63, 126, 252],
-    "size_windows": [21, 63, 126, 252],
     "sgm_windows": [21, 63, 126, 252],
+    "size_windows": [21, 63, 126, 252],
+    "skew_windows": [21, 63, 126, 252],
     "to_windows": [21, 63, 126, 252],
+    "ts_windows": [21, 63, 126, 252],
 
     "top_props": [0.1, 0.2, 0.5, 1],
+    "lbds": [0.2, 0.4, 0.6, 0.8],
 }
 amt_windows = factors_args["amt_windows"]
+amp_windows = factors_args["amp_windows"]
 basis_windows = factors_args["basis_windows"]
 beta_windows = factors_args["beta_windows"]
 csp_windows = factors_args["csp_windows"]
@@ -47,6 +52,7 @@ skew_windows = factors_args["skew_windows"]
 to_windows = factors_args["to_windows"]
 ts_windows = factors_args["ts_windows"]
 top_props = factors_args["top_props"]
+lbds = factors_args["lbds"]
 
 manager_cx_windows = {
     "CSP": csp_windows,
@@ -58,6 +64,9 @@ manager_cx_windows = {
 }
 
 fac_sub_grp_amt = ["AMT{:03d}".format(_) for _ in amt_windows]
+fac_sub_grp_amp = ["AMPH{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(amp_windows, lbds)] \
+                  + ["AMPL{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(amp_windows, lbds)] \
+                  + ["AMPD{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(amp_windows, lbds)]
 fac_sub_grp_basis = ["BASIS"] + ["BASIS_M{:03d}".format(_) for _ in basis_windows] + ["BASIS_D{:03d}".format(_) for _ in basis_windows]
 fac_sub_grp_beta = ["BETA{:03d}".format(_) for _ in beta_windows] + ["BETA_D{:03d}".format(_) for _ in beta_windows[1:]]
 fac_sub_grp_csp = ["CSP{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(csp_windows, top_props)]
@@ -75,10 +84,13 @@ fac_sub_grp_ts = ["TS"] + ["TS_M{:03d}".format(_) for _ in ts_windows] + ["TS_D{
 
 factors = fac_sub_grp_basis + fac_sub_grp_beta + fac_sub_grp_ts + fac_sub_grp_mtm \
           + fac_sub_grp_amt + fac_sub_grp_sgm + fac_sub_grp_skew + fac_sub_grp_size + fac_sub_grp_to \
-          + fac_sub_grp_csp + fac_sub_grp_csr + fac_sub_grp_ctp + fac_sub_grp_ctr + fac_sub_grp_cvp + fac_sub_grp_cvr
+          + fac_sub_grp_csp + fac_sub_grp_csr + fac_sub_grp_ctp + fac_sub_grp_ctr + fac_sub_grp_cvp + fac_sub_grp_cvr \
+          + fac_sub_grp_amp
 
 # --- simulation
 cost_rate = 5e-4
 
 if __name__ == "__main__":
     print("Number of factors = {}".format(len(factors)))
+    print(mapper_index_to_futures)
+    print(mapper_futures_to_index)

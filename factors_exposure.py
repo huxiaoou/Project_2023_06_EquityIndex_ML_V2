@@ -1,6 +1,7 @@
 import datetime as dt
 import itertools as ittl
 import multiprocessing as mp
+from algs.factor_exposure_amp import fac_exp_alg_amp
 from algs.factor_exposure_amt import fac_exp_alg_amt
 from algs.factor_exposure_basis import fac_exp_alg_basis, fac_exp_alg_basis_ma_and_diff
 from algs.factor_exposure_beta import fac_exp_alg_beta, fac_exp_alg_beta_diff
@@ -11,6 +12,34 @@ from algs.factor_exposure_size import fac_exp_alg_size
 from algs.factor_exposure_skew import fac_exp_alg_skew
 from algs.factor_exposure_to import fac_exp_alg_to
 from algs.factor_exposure_ts import fac_exp_alg_ts, fac_exp_alg_ts_ma_and_diff
+
+
+def cal_fac_exp_amp_mp(proc_num: int,
+                       run_mode: str, bgn_date: str, stp_date: str,
+                       amp_windows: list[int], lbds: list[float],
+                       instruments_universe: list[str],
+                       database_structure: dict,
+                       major_return_dir: str,
+                       factors_exposure_dir: str,
+                       mapper_fut_to_idx: dict[str, str],
+                       equity_index_by_instrument_dir: str):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for amp_window, lbd in ittl.product(amp_windows, lbds):
+        pool.apply_async(fac_exp_alg_amp,
+                         args=(run_mode, bgn_date, stp_date,
+                               amp_window, lbd,
+                               instruments_universe,
+                               database_structure,
+                               major_return_dir,
+                               factors_exposure_dir,
+                               mapper_fut_to_idx,
+                               equity_index_by_instrument_dir))
+    pool.close()
+    pool.join()
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
 
 
 def cal_fac_exp_amt_mp(proc_num: int,

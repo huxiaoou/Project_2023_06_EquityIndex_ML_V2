@@ -1,6 +1,6 @@
 import argparse
 from test_returns import cal_test_returns_mp
-from project_config import equity_indexes
+from project_config import equity_indexes, mapper_futures_to_index
 from project_config import instruments_universe
 from project_config import test_windows
 from project_config import factors_args
@@ -15,6 +15,7 @@ from project_setup import equity_index_by_instrument_dir
 from project_setup import research_test_returns_dir
 from project_setup import research_factors_exposure_dir
 from misc import split_spot_daily_k
+from factors_exposure import cal_fac_exp_amp_mp
 from factors_exposure import cal_fac_exp_amt_mp
 from factors_exposure import cal_fac_exp_basis_mp
 from factors_exposure import cal_fac_exp_beta_mp
@@ -57,7 +58,19 @@ if __name__ == "__main__":
             futures_em01_db_name=futures_em01_db_name,
         )
     elif switch in ["fe", "factors_exposure"]:
-        if factor == "amt":
+        if factor == "amp":
+            cal_fac_exp_amp_mp(
+                proc_num=5,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                amp_windows=factors_args["amp_windows"], lbds=factors_args["lbds"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                major_return_dir=major_return_dir,
+                factors_exposure_dir=research_factors_exposure_dir,
+                mapper_fut_to_idx=mapper_futures_to_index,
+                equity_index_by_instrument_dir=equity_index_by_instrument_dir
+            )
+        elif factor == "amt":
             cal_fac_exp_amt_mp(
                 proc_num=5,
                 run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
