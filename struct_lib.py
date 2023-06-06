@@ -25,3 +25,28 @@ database_structure.update({
         })
     ) for z in factors
 })
+
+database_structure.update({
+    "em01_major": CLib1Tab1(
+        t_lib_name="em01_major.db",
+        t_tab=CTable({
+            "table_name": "em01_major",
+            "primary_keys": {"trade_date": "TEXT", "timestamp": "INT4", "loc_id": "TEXT"},
+            "value_columns": {"instrument": "TEXT",
+                              "exchange": "TEXT",
+                              "wind_code": "TEXT",
+                              "open": "REAL",
+                              "high": "REAL",
+                              "low": "REAL",
+                              "close": "REAL",
+                              "volume": "REAL",
+                              "amount": "REAL",
+                              "oi": "REAL",
+                              "daily_open": "REAL",
+                              "daily_high": "REAL",
+                              "daily_low": "REAL",
+                              "preclose": "REAL",
+                              "preoi": "REAL"}
+        })  # the same as em01 in E:\Deploy\Data\Futures\md\md_structure.json
+    )
+})

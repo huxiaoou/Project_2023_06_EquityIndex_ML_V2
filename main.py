@@ -14,7 +14,8 @@ from project_setup import futures_md_dir
 from project_setup import equity_index_by_instrument_dir
 from project_setup import research_test_returns_dir
 from project_setup import research_factors_exposure_dir
-from misc import split_spot_daily_k
+from project_setup import research_intermediary_dir
+from misc import split_spot_daily_k, update_major_minute
 from factors_exposure import cal_fac_exp_amp_mp
 from factors_exposure import cal_fac_exp_amt_mp
 from factors_exposure import cal_fac_exp_basis_mp
@@ -43,6 +44,14 @@ if __name__ == "__main__":
 
     if switch in ["pp", "preprocess"]:
         split_spot_daily_k(equity_index_by_instrument_dir, equity_indexes)
+        update_major_minute(run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                            instruments=instruments_universe, calendar_path=calendar_path,
+                            futures_md_structure_path=futures_md_structure_path,
+                            futures_em01_db_name=futures_em01_db_name,
+                            futures_md_dir=futures_md_dir,
+                            major_minor_dir=major_minor_dir,
+                            intermediary_dir=research_intermediary_dir,
+                            database_structure=database_structure)
     elif switch in ["tr", "test_returns"]:
         cal_test_returns_mp(
             proc_num=5,
