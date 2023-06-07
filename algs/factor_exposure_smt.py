@@ -16,9 +16,14 @@ def cal_smart(t_sub_df: pd.DataFrame, t_sort_var: str, t_lbd: float):
     volume_threshold = _sorted_df["volume"].sum() * t_lbd
     n = sum(_sorted_df["volume"].cumsum() < volume_threshold) + 1
     smart_df = _sorted_df.head(n)
-    smart_p = smart_df["vwap"] @ smart_df["amount"] / smart_df["amount"].sum() / tot_vwap
-    smart_r = smart_df["m01_return_cls"] @ smart_df["amount"] / smart_df["amount"].sum() - tot_ret
-    return smart_p, smart_r
+    if (amt_sum := smart_df["amount"].sum()) > 0:
+        w = smart_df["amount"] / amt_sum
+        smart_p = smart_df["vwap"] @ w / tot_vwap - 1
+        smart_r = smart_df["m01_return_cls"] @ w - tot_ret
+        return smart_p, smart_r
+    else:
+        print("... Warning! Sum of volume of smart df is ZERO")
+        return 0, 0
 
 
 def fac_exp_alg_smt(
@@ -65,16 +70,18 @@ def fac_exp_alg_smt(
                 ("instrument", "=", instrument.split(".")[0]),
             ], t_value_columns=["trade_date", "timestamp", "loc_id", "volume", "amount", "close", "preclose"]
         )
+        em01_df[["close", "preclose"]] = em01_df[["close", "preclose"]].round(2)
         em01_df["vwap"] = (em01_df["amount"] / em01_df["volume"] / contract_multiplier * amount_scale).fillna(method="ffill")
         em01_df["m01_return_cls"] = (em01_df["close"] / em01_df["preclose"] - 1).replace(np.inf, 0)
-        em01_df["smart_idx"] = em01_df["m01_return_cls"].abs() / np.sqrt(em01_df["volume"])
+        em01_df["smart_idx"] = em01_df[["m01_return_cls", "volume"]].apply(
+            lambda z: np.abs(z["m01_return_cls"]) / np.log(z["volume"]) * 1e4 if z["volume"] > 1 else 0, axis=1)
 
         r_p_data, r_r_data = {}, {}
-        for trade_date in iter_dates:
-            base_date = calendar.get_next_date(trade_date, -smt_window + 1)
-            filter_dates = (em01_df["trade_date"] >= base_date) & (em01_df["trade_date"] <= trade_date)
+        for iter_end_date in iter_dates:
+            iter_bgn_date = calendar.get_next_date(iter_end_date, -smt_window + 1)
+            filter_dates = (em01_df["trade_date"] >= iter_bgn_date) & (em01_df["trade_date"] <= iter_end_date)
             sub_df = em01_df.loc[filter_dates]
-            r_p_data[trade_date], r_r_data[trade_date] = cal_smart(
+            r_p_data[iter_end_date], r_r_data[iter_end_date] = cal_smart(
                 t_sub_df=sub_df, t_sort_var="smart_idx", t_lbd=lbd)
 
         for _iter_data, _iter_dfs, _iter_factor_lbl in zip([r_p_data, r_r_data],

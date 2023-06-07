@@ -1,3 +1,10 @@
+"""
+0.  Entry point of this project
+1.  Suggested bgn_date for overwrite mode:
+    {
+        "update_major_minute": "20150416"
+    }
+"""
 import argparse
 from test_returns import cal_test_returns_mp
 from project_config import equity_indexes, mapper_futures_to_index
@@ -42,10 +49,11 @@ if __name__ == "__main__":
     switch = args.switch.lower()
     factor = args.factor.lower()
     run_mode, bgn_date, stp_date = "o", "20160101", "20230529"
+    m01_bgn_date, m01_stp_date = "20150416", "20230529"
 
     if switch in ["pp", "preprocess"]:
         split_spot_daily_k(equity_index_by_instrument_dir, equity_indexes)
-        update_major_minute(run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+        update_major_minute(run_mode=run_mode, bgn_date=m01_bgn_date, stp_date=m01_stp_date,
                             instruments=instruments_universe, calendar_path=calendar_path,
                             futures_md_structure_path=futures_md_structure_path,
                             futures_em01_db_name=futures_em01_db_name,

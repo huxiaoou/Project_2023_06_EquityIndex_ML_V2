@@ -65,6 +65,7 @@ def update_major_minute(
     # --- main loop
     dfs_list = []
     for trade_date in calendar.get_iter_list(bgn_date, stp_date, True):
+        theory_number_of_bars = 270 if trade_date < "20160101" else 240
         for instrument in instruments:
             try:
                 major_contract = major_minor_manager[instrument].at[trade_date, "n_contract"]
@@ -77,9 +78,9 @@ def update_major_minute(
                     ("trade_date", "=", trade_date),
                     ("loc_id", "=", major_contract),
                 ], t_value_columns=em01_cols)
-            if (num_of_bars := len(major_contract_m01_df)) != 240:
-                print("Error! Number of bars = {} @ {} for {} - {}".format(
-                    num_of_bars, trade_date, instrument, major_contract))
+            if (num_of_bars := len(major_contract_m01_df)) != theory_number_of_bars:
+                print("Error! Number of bars = {} @ {} for {} - {}, theory = {}".format(
+                    num_of_bars, trade_date, instrument, major_contract, theory_number_of_bars))
                 sys.exit()
             dfs_list.append(major_contract_m01_df)
 
