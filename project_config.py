@@ -33,6 +33,7 @@ factors_args = {
     "smt_windows": [3, 5, 10, 21],
     "to_windows": [21, 63, 126, 252],
     "ts_windows": [21, 63, 126, 252],
+    "twc_windows": [3, 5, 10, 21],
 
     "top_props": [0.1, 0.2, 0.5, 1],
     "lbds": [0.2, 0.4, 0.6, 0.8],
@@ -56,6 +57,7 @@ skew_windows = factors_args["skew_windows"]
 smt_windows = factors_args["smt_windows"]
 to_windows = factors_args["to_windows"]
 ts_windows = factors_args["ts_windows"]
+twc_windows = factors_args["twc_windows"]
 top_props = factors_args["top_props"]
 lbds = factors_args["lbds"]
 drifts = factors_args["drifts"]
@@ -90,11 +92,15 @@ fac_sub_grp_smt = ["SMTP{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.p
                   ["SMTR{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(smt_windows, lbds)]
 fac_sub_grp_to = ["TO{:03d}".format(_) for _ in to_windows]
 fac_sub_grp_ts = ["TS"] + ["TS_M{:03d}".format(_) for _ in ts_windows] + ["TS_D{:03d}".format(_) for _ in ts_windows]
+fac_sub_grp_twc = ["TWCU{:03d}".format(_) for _ in twc_windows] \
+                  + ["TWCD{:03d}".format(_) for _ in twc_windows] \
+                  + ["TWCT{:03d}".format(_) for _ in twc_windows] \
+                  + ["TWCV{:03d}".format(_) for _ in twc_windows]
 
 factors = fac_sub_grp_basis + fac_sub_grp_beta + fac_sub_grp_ts + fac_sub_grp_mtm \
           + fac_sub_grp_amt + fac_sub_grp_sgm + fac_sub_grp_skew + fac_sub_grp_size + fac_sub_grp_to \
           + fac_sub_grp_csp + fac_sub_grp_csr + fac_sub_grp_ctp + fac_sub_grp_ctr + fac_sub_grp_cvp + fac_sub_grp_cvr \
-          + fac_sub_grp_amp + fac_sub_grp_smt + fac_sub_grp_exr
+          + fac_sub_grp_amp + fac_sub_grp_smt + fac_sub_grp_exr + fac_sub_grp_twc
 
 # --- simulation
 cost_rate = 5e-4

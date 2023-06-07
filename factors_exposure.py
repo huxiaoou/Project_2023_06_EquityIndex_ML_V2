@@ -14,6 +14,7 @@ from algs.factor_exposure_skew import fac_exp_alg_skew
 from algs.factor_exposure_smt import fac_exp_alg_smt
 from algs.factor_exposure_to import fac_exp_alg_to
 from algs.factor_exposure_ts import fac_exp_alg_ts, fac_exp_alg_ts_ma_and_diff
+from algs.factor_exposure_twc import fac_exp_alg_twc
 
 
 def cal_fac_exp_amp_mp(proc_num: int,
@@ -363,6 +364,32 @@ def cal_fac_exp_ts_mp(proc_num: int,
                                calendar_path,
                                database_structure,
                                factors_exposure_dir))
+    pool.close()
+    pool.join()
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
+
+
+def cal_fac_exp_twc_mp(proc_num: int,
+                       run_mode: str, bgn_date: str, stp_date: str | None,
+                       twc_windows: list[int],
+                       instruments_universe: list[str],
+                       database_structure: dict,
+                       factors_exposure_dir: str,
+                       intermediary_dir: str,
+                       calendar_path: str):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for p_window in twc_windows:
+        pool.apply_async(fac_exp_alg_twc,
+                         args=(run_mode, bgn_date, stp_date,
+                               p_window,
+                               instruments_universe,
+                               database_structure,
+                               factors_exposure_dir,
+                               intermediary_dir,
+                               calendar_path))
     pool.close()
     pool.join()
     t1 = dt.datetime.now()

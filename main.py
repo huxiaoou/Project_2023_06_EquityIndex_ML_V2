@@ -36,6 +36,7 @@ from factors_exposure import cal_fac_exp_skew_mp
 from factors_exposure import cal_fac_exp_smt_mp
 from factors_exposure import cal_fac_exp_to_mp
 from factors_exposure import cal_fac_exp_ts_mp
+from factors_exposure import cal_fac_exp_twc_mp
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description="Entry point to run all")
@@ -224,6 +225,17 @@ if __name__ == "__main__":
                 factors_exposure_dir=research_factors_exposure_dir,
                 calendar_path=calendar_path,
                 price_type="close",
+            )
+        elif factor == "twc":
+            cal_fac_exp_twc_mp(
+                proc_num=proc_num,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                twc_windows=factors_args["twc_windows"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                factors_exposure_dir=research_factors_exposure_dir,
+                intermediary_dir=research_intermediary_dir,
+                calendar_path=calendar_path,
             )
         else:
             print("... factor = {} is not a legal option, please check again".format(factor))
