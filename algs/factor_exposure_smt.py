@@ -1,46 +1,104 @@
 import os
 import datetime as dt
+import numpy as np
 import pandas as pd
+from skyrim.whiterun import CCalendar, CInstrumentInfoTable
 from skyrim.falkreath import CLib1Tab1
+from skyrim.falkreath import CManagerLibReader
 from skyrim.falkreath import CManagerLibWriter
 
 
-def fac_exp_alg_sgm(
-        run_mode: str, bgn_date: str, stp_date: str | None, sgm_window: int,
+def cal_smart(t_sub_df: pd.DataFrame, t_sort_var: str, t_lbd: float):
+    tot_vwap = t_sub_df["vwap"] @ t_sub_df["amount"] / t_sub_df["amount"].sum()
+    tot_ret = t_sub_df["m01_return_cls"] @ t_sub_df["amount"] / t_sub_df["amount"].sum()
+
+    _sorted_df = t_sub_df.sort_values(by=t_sort_var, ascending=False)
+    volume_threshold = _sorted_df["volume"].sum() * t_lbd
+    n = sum(_sorted_df["volume"].cumsum() < volume_threshold) + 1
+    smart_df = _sorted_df.head(n)
+    smart_p = smart_df["vwap"] @ smart_df["amount"] / smart_df["amount"].sum() / tot_vwap
+    smart_r = smart_df["m01_return_cls"] @ smart_df["amount"] / smart_df["amount"].sum() - tot_ret
+    return smart_p, smart_r
+
+
+def fac_exp_alg_smt(
+        run_mode: str, bgn_date: str, stp_date: str | None,
+        smt_window: int, lbd: float,
         instruments_universe: list[str],
         database_structure: dict[str, CLib1Tab1],
-        major_return_dir: str,
         factors_exposure_dir: str,
+        intermediary_dir: str,
+        calendar_path: str,
+        futures_instru_info_path: str,
+        amount_scale: float,
 ):
-    factor_lbl = "SGM{:03d}".format(sgm_window)
+    factor_p_lbl, factor_r_lbl = ["SMT{}{:03d}T{:02d}".format(_, smt_window, int(lbd * 10)) for _ in ["P", "R"]]
     if stp_date is None:
         stp_date = (dt.datetime.strptime(bgn_date, "%Y%m%d") + dt.timedelta(days=1)).strftime("%Y%m%d")
 
-    # --- init major contracts
-    all_factor_dfs = []
-    for instrument in instruments_universe:
-        major_return_file = "major_return.{}.close.csv.gz".format(instrument)
-        major_return_path = os.path.join(major_return_dir, major_return_file)
-        major_return_df = pd.read_csv(major_return_path, dtype={"trade_date": str}).set_index("trade_date")
-        major_return_df[factor_lbl] = major_return_df["major_return"].rolling(window=sgm_window).std() * (252 ** 0.5)
-        fiter_dates = (major_return_df.index >= bgn_date) & (major_return_df.index < stp_date)
-        factor_df = major_return_df.loc[fiter_dates, [factor_lbl]].copy()
-        factor_df["instrument"] = instrument
-        all_factor_dfs.append(factor_df[["instrument", factor_lbl]])
+    # --- load calendar
+    calendar = CCalendar(calendar_path)
 
-    # --- reorganize
-    all_factor_df = pd.concat(all_factor_dfs, axis=0, ignore_index=False)
-    all_factor_df.sort_index(inplace=True)
+    # --- load instru info table
+    instru_info_table = CInstrumentInfoTable(t_path=futures_instru_info_path, t_index_label="windCode", t_type="CSV")
 
-    # --- save
-    factor_lib_structure = database_structure[factor_lbl]
-    factor_lib = CManagerLibWriter(
-        t_db_name=factor_lib_structure.m_lib_name,
-        t_db_save_dir=factors_exposure_dir
+    # --- init em01_major reader
+    em01_major_lib_structure = database_structure["em01_major"]  # make sure it has the columns as em01_lib
+    em01_major_lib = CManagerLibReader(
+        t_db_name=em01_major_lib_structure.m_lib_name,
+        t_db_save_dir=intermediary_dir
     )
-    factor_lib.initialize_table(t_table=factor_lib_structure.m_tab, t_remove_existence=run_mode in ["O", "OVERWRITE"])
-    factor_lib.update(t_update_df=all_factor_df, t_using_index=True)
-    factor_lib.close()
+    em01_major_lib.set_default(t_default_table_name=em01_major_lib_structure.m_tab.m_table_name)
 
-    print("... @ {} factor = {:>12s} calculated".format(dt.datetime.now(), factor_lbl))
+    # ---
+    iter_dates = calendar.get_iter_list(bgn_date, stp_date, True)
+    base_date = calendar.get_next_date(iter_dates[0], -smt_window + 1)
+
+    # --- init major contracts
+    all_factor_p_dfs, all_factor_r_dfs = [], []
+    for instrument in instruments_universe:
+        contract_multiplier = instru_info_table.get_multiplier(instrument)
+        em01_df = em01_major_lib.read_by_conditions(
+            t_conditions=[
+                ("trade_date", ">=", base_date),
+                ("trade_date", "<", stp_date),
+                ("instrument", "=", instrument.split(".")[0]),
+            ], t_value_columns=["trade_date", "timestamp", "loc_id", "volume", "amount", "close", "preclose"]
+        )
+        em01_df["vwap"] = (em01_df["amount"] / em01_df["volume"] / contract_multiplier * amount_scale).fillna(method="ffill")
+        em01_df["m01_return_cls"] = (em01_df["close"] / em01_df["preclose"] - 1).replace(np.inf, 0)
+        em01_df["smart_idx"] = em01_df["m01_return_cls"].abs() / np.sqrt(em01_df["volume"])
+
+        r_p_data, r_r_data = {}, {}
+        for trade_date in iter_dates:
+            base_date = calendar.get_next_date(trade_date, -smt_window + 1)
+            filter_dates = (em01_df["trade_date"] >= base_date) & (em01_df["trade_date"] <= trade_date)
+            sub_df = em01_df.loc[filter_dates]
+            r_p_data[trade_date], r_r_data[trade_date] = cal_smart(
+                t_sub_df=sub_df, t_sort_var="smart_idx", t_lbd=lbd)
+
+        for _iter_data, _iter_dfs, _iter_factor_lbl in zip([r_p_data, r_r_data],
+                                                           [all_factor_p_dfs, all_factor_r_dfs],
+                                                           [factor_p_lbl, factor_r_lbl]):
+            factor_df = pd.DataFrame({"instrument": instrument, _iter_factor_lbl: pd.Series(_iter_data)})
+            _iter_dfs.append(factor_df[["instrument", _iter_factor_lbl]])
+
+    for _iter_dfs, _iter_factor_lbl in zip([all_factor_p_dfs, all_factor_r_dfs],
+                                           [factor_p_lbl, factor_r_lbl]):
+        # --- reorganize
+        all_factor_df = pd.concat(_iter_dfs, axis=0, ignore_index=False)
+        all_factor_df.sort_index(inplace=True)
+
+        # --- save
+        factor_lib_structure = database_structure[_iter_factor_lbl]
+        factor_lib = CManagerLibWriter(
+            t_db_name=factor_lib_structure.m_lib_name,
+            t_db_save_dir=factors_exposure_dir
+        )
+        factor_lib.initialize_table(t_table=factor_lib_structure.m_tab, t_remove_existence=run_mode in ["O", "OVERWRITE"])
+        factor_lib.update(t_update_df=all_factor_df, t_using_index=True)
+        factor_lib.close()
+
+        em01_major_lib.close()
+        print("... @ {} factor = {:>12s} calculated".format(dt.datetime.now(), _iter_factor_lbl))
     return 0

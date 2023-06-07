@@ -88,5 +88,5 @@ def fac_exp_alg_amp(
         factor_lib.update(t_update_df=all_factor_df, t_using_index=True)
         factor_lib.close()
 
-    print("... @ {} factor = {:>12s} calculated".format(dt.datetime.now(), factor_h_lbl))
+        print("... @ {} factor = {:>12s} calculated".format(dt.datetime.now(), _iter_factor_lbl))
     return 0

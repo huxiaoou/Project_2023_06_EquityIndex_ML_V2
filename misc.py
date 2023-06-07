@@ -3,7 +3,7 @@ import sys
 import json
 import datetime as dt
 import pandas as pd
-from skyrim.whiterun import CCalendar, CInstrumentInfoTable
+from skyrim.whiterun import CCalendar
 from skyrim.falkreath import CManagerLibReader, CTable
 from skyrim.falkreath import CManagerLibWriter
 
@@ -17,7 +17,7 @@ def split_spot_daily_k(equity_index_by_instrument_dir: str, equity_indexes: tupl
         equity_index_file = "{}.csv".format(equity_index_code)
         equity_index_path = os.path.join(equity_index_by_instrument_dir, equity_index_file)
         daily_k_df.to_csv(equity_index_path, index=False, float_format="%.4f")
-        print("...", equity_index_code, "saved as csvs")
+        print("...", equity_index_code, "saved as csv")
     return 0
 
 

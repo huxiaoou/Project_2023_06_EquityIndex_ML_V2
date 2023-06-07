@@ -6,7 +6,7 @@ from project_config import test_windows
 from project_config import factors_args
 from project_config import manager_cx_windows
 from struct_lib import database_structure
-from project_setup import calendar_path
+from project_setup import calendar_path, futures_instru_info_path
 from project_setup import major_minor_dir, major_return_dir, md_by_instru_dir
 from project_setup import futures_md_structure_path
 from project_setup import futures_em01_db_name
@@ -25,6 +25,7 @@ from factors_exposure import cal_fac_exp_mtm_mp
 from factors_exposure import cal_fac_exp_sgm_mp
 from factors_exposure import cal_fac_exp_size_mp
 from factors_exposure import cal_fac_exp_skew_mp
+from factors_exposure import cal_fac_exp_smt_mp
 from factors_exposure import cal_fac_exp_to_mp
 from factors_exposure import cal_fac_exp_ts_mp
 
@@ -163,6 +164,19 @@ if __name__ == "__main__":
                 database_structure=database_structure,
                 major_return_dir=major_return_dir,
                 factors_exposure_dir=research_factors_exposure_dir
+            )
+        elif factor == "smt":
+            cal_fac_exp_smt_mp(
+                proc_num=5,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                smt_windows=factors_args["smt_windows"], lbds=factors_args["lbds"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                factors_exposure_dir=research_factors_exposure_dir,
+                intermediary_dir=research_intermediary_dir,
+                calendar_path=calendar_path,
+                futures_instru_info_path=futures_instru_info_path,
+                amount_scale=1e4
             )
         elif factor == "to":
             cal_fac_exp_to_mp(
