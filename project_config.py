@@ -25,6 +25,7 @@ factors_args = {
     "ctr_windows": [21, 63, 126, 252],
     "cvp_windows": [21, 63, 126, 252],
     "cvr_windows": [21, 63, 126, 252],
+    "exr_windows": [3, 5, 10, 21],
     "mtm_windows": [21, 63, 126, 252],
     "sgm_windows": [21, 63, 126, 252],
     "size_windows": [21, 63, 126, 252],
@@ -35,6 +36,7 @@ factors_args = {
 
     "top_props": [0.1, 0.2, 0.5, 1],
     "lbds": [0.2, 0.4, 0.6, 0.8],
+    "drifts": [1, 2, 3],
 }
 amt_windows = factors_args["amt_windows"]
 amp_windows = factors_args["amp_windows"]
@@ -46,6 +48,7 @@ ctp_windows = factors_args["ctp_windows"]
 ctr_windows = factors_args["ctr_windows"]
 cvp_windows = factors_args["cvp_windows"]
 cvr_windows = factors_args["cvr_windows"]
+exr_windows = factors_args["exr_windows"]
 mtm_windows = factors_args["mtm_windows"]
 sgm_windows = factors_args["sgm_windows"]
 size_windows = factors_args["size_windows"]
@@ -55,6 +58,7 @@ to_windows = factors_args["to_windows"]
 ts_windows = factors_args["ts_windows"]
 top_props = factors_args["top_props"]
 lbds = factors_args["lbds"]
+drifts = factors_args["drifts"]
 
 manager_cx_windows = {
     "CSP": csp_windows,
@@ -77,6 +81,7 @@ fac_sub_grp_ctp = ["CTP{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.pr
 fac_sub_grp_ctr = ["CTR{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(ctr_windows, top_props)]
 fac_sub_grp_cvp = ["CVP{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(cvp_windows, top_props)]
 fac_sub_grp_cvr = ["CVR{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(cvr_windows, top_props)]
+fac_sub_grp_exr = ["EXR{:03d}D{:d}".format(_, d) for _, d in ittl.product(exr_windows, drifts)]
 fac_sub_grp_mtm = ["MTM{:03d}".format(_) for _ in mtm_windows] + ["MTM{:03d}ADJ".format(_) for _ in mtm_windows]
 fac_sub_grp_sgm = ["SGM{:03d}".format(_) for _ in sgm_windows]
 fac_sub_grp_size = ["SIZE{:03d}".format(_) for _ in size_windows]
@@ -89,7 +94,7 @@ fac_sub_grp_ts = ["TS"] + ["TS_M{:03d}".format(_) for _ in ts_windows] + ["TS_D{
 factors = fac_sub_grp_basis + fac_sub_grp_beta + fac_sub_grp_ts + fac_sub_grp_mtm \
           + fac_sub_grp_amt + fac_sub_grp_sgm + fac_sub_grp_skew + fac_sub_grp_size + fac_sub_grp_to \
           + fac_sub_grp_csp + fac_sub_grp_csr + fac_sub_grp_ctp + fac_sub_grp_ctr + fac_sub_grp_cvp + fac_sub_grp_cvr \
-          + fac_sub_grp_amp + fac_sub_grp_smt
+          + fac_sub_grp_amp + fac_sub_grp_smt + fac_sub_grp_exr
 
 # --- simulation
 cost_rate = 5e-4

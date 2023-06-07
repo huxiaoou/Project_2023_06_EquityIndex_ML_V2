@@ -6,6 +6,7 @@ from algs.factor_exposure_amt import fac_exp_alg_amt
 from algs.factor_exposure_basis import fac_exp_alg_basis, fac_exp_alg_basis_ma_and_diff
 from algs.factor_exposure_beta import fac_exp_alg_beta, fac_exp_alg_beta_diff
 from algs.factor_exposure_cx import fac_exp_alg_cx
+from algs.factor_exposure_exr import fac_exp_alg_exr
 from algs.factor_exposure_mtm import fac_exp_alg_mtm
 from algs.factor_exposure_sgm import fac_exp_alg_sgm
 from algs.factor_exposure_size import fac_exp_alg_size
@@ -153,6 +154,32 @@ def cal_fac_exp_cx_mp(proc_num: int,
                                    database_structure,
                                    major_return_dir,
                                    factors_exposure_dir))
+    pool.close()
+    pool.join()
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
+
+
+def cal_fac_exp_exr_mp(proc_num: int,
+                       run_mode: str, bgn_date: str, stp_date: str | None,
+                       exr_windows: list[int], drifts: list[float],
+                       instruments_universe: list[str],
+                       database_structure: dict,
+                       factors_exposure_dir: str,
+                       intermediary_dir: str,
+                       calendar_path: str):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for p_window, drift in ittl.product(exr_windows, drifts):
+        pool.apply_async(fac_exp_alg_exr,
+                         args=(run_mode, bgn_date, stp_date,
+                               p_window, drift,
+                               instruments_universe,
+                               database_structure,
+                               factors_exposure_dir,
+                               intermediary_dir,
+                               calendar_path))
     pool.close()
     pool.join()
     t1 = dt.datetime.now()
