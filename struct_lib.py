@@ -50,3 +50,14 @@ database_structure.update({
         })  # the same as em01 in E:\Deploy\Data\Futures\md\md_structure.json
     )
 })
+
+database_structure.update({
+    z: CLib1Tab1(
+        t_lib_name=z + ".db",
+        t_tab=CTable({
+            "table_name": z,
+            "primary_keys": {"trade_date": "TEXT", "instrument": "TEXT", "institute": "TEXT"},
+            "value_columns": {"lng": "REAL", "srt": "REAL"},
+        })
+    ) for z in ["hld_pos", "dlt_pos"]
+})

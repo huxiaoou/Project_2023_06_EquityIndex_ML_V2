@@ -45,6 +45,11 @@ futures_md_structure_path = os.path.join(futures_md_dir, global_config["futures"
 futures_md_db_name = global_config["futures"]["md_db_name"]
 futures_em01_db_name = global_config["futures"]["em01_db_name"]
 
+futures_fundamental_dir = os.path.join(futures_dir, global_config["futures"]["fundamental_dir"])
+futures_fundamental_structure_path = os.path.join(futures_fundamental_dir, global_config["futures"]["fundamental_structure_file"])
+futures_fundamental_db_name = global_config["futures"]["fundamental_db_name"]
+futures_fundamental_intermediary_dir = os.path.join(futures_fundamental_dir, global_config["futures"]["fundamental_intermediary_dir"])
+
 futures_by_instrument_dir = os.path.join(futures_dir, global_config["futures"]["by_instrument_dir"])
 major_minor_dir = os.path.join(futures_by_instrument_dir, global_config["futures"]["major_minor_dir"])
 major_return_dir = os.path.join(futures_by_instrument_dir, global_config["futures"]["major_return_dir"])
