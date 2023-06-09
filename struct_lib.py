@@ -1,9 +1,11 @@
+import itertools as ittl
 from skyrim.falkreath import CLib1Tab1, CTable
 from project_config import test_windows
 from project_config import factors
 
 database_structure: dict[str, CLib1Tab1] = {}
 
+# --- test returns
 test_return_lbls = ["test_return_{:03d}".format(w) for w in test_windows]
 database_structure.update({
     z: CLib1Tab1(
@@ -15,6 +17,7 @@ database_structure.update({
         })
     ) for z in test_return_lbls})
 
+# --- factor exposures
 database_structure.update({
     z: CLib1Tab1(
         t_lib_name=z + ".db",
@@ -26,6 +29,19 @@ database_structure.update({
     ) for z in factors
 })
 
+# --- ic tests by factors
+database_structure.update({
+    "ic-{}-TW{:03d}".format(z, tw): CLib1Tab1(
+        t_lib_name="ic-{}-TW{:03d}.db".format(z, tw),
+        t_tab=CTable({
+            "table_name": z,
+            "primary_keys": {"trade_date": "TEXT"},
+            "value_columns": {"pearson": "REAL", "spearman": "REAL", "CH": "REAL"},
+        })
+    ) for z, tw in ittl.product(factors, test_windows)
+})
+
+# --- em01 by major contract
 database_structure.update({
     "em01_major": CLib1Tab1(
         t_lib_name="em01_major.db",
@@ -51,6 +67,7 @@ database_structure.update({
     )
 })
 
+# --- hold position and delta position from public information
 database_structure.update({
     z: CLib1Tab1(
         t_lib_name=z + ".db",
