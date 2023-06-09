@@ -38,7 +38,7 @@ def ic_test_single_factor(factor_lbl: str, test_window: int,
     iter_dates = calendar.get_iter_list(bgn_date, stp_date, True)
     base_date = calendar.get_next_date(iter_dates[0], -test_window - 1)
 
-    # --- check existence
+    # --- ic-tests lib
     ic_test_lib_id = "ic-{}-TW{:03d}".format(factor_lbl, test_window)
     ic_test_lib_structure = database_structure[ic_test_lib_id]
     ic_test_lib = CManagerLibWriter(t_db_save_dir=os.path.join(ic_tests_dir, factor_lbl), t_db_name=ic_test_lib_structure.m_lib_name)

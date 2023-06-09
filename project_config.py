@@ -117,5 +117,3 @@ cost_rate = 5e-4
 
 if __name__ == "__main__":
     print("Number of factors = {}".format(len(factors)))
-    print(mapper_index_to_futures)
-    print(mapper_futures_to_index)

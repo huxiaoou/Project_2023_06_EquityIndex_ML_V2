@@ -9,6 +9,7 @@ import argparse
 from preprocess.preprocess import split_spot_daily_k, update_major_minute, update_public_info
 from test_returns.test_returns import cal_test_returns_mp
 from ic_tests.ic_tests import cal_ic_tests_mp
+from ic_tests.ic_tests_summary import cal_ic_tests_summary
 from project_config import equity_indexes, mapper_futures_to_index
 from project_config import instruments_universe, test_windows
 from project_config import factors, factors_args
@@ -21,7 +22,7 @@ from project_setup import futures_md_db_name, futures_em01_db_name
 from project_setup import futures_fundamental_intermediary_dir
 from project_setup import equity_index_by_instrument_dir
 from project_setup import research_test_returns_dir, research_factors_exposure_dir
-from project_setup import research_intermediary_dir, research_ic_tests_dir
+from project_setup import research_intermediary_dir, research_ic_tests_dir, research_ic_tests_summary_dir
 from factors_exposure import cal_fac_exp_amp_mp
 from factors_exposure import cal_fac_exp_amt_mp
 from factors_exposure import cal_fac_exp_basis_mp
@@ -285,13 +286,22 @@ if __name__ == "__main__":
     elif switch in ["IC"]:
         cal_ic_tests_mp(
             proc_num=5,
-            # factor_lbls=factors, test_windows=test_windows,
-            factor_lbls=["BASIS"], test_windows=test_windows,
+            factor_lbls=factors, test_windows=test_windows,
             run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
             ic_tests_dir=research_ic_tests_dir,
             factors_exposure_dir=research_factors_exposure_dir,
             test_returns_dir=research_test_returns_dir,
             database_structure=database_structure,
             calendar_path=calendar_path)
+    elif switch in ["ICSUM"]:
+        for test_window in test_windows:
+            cal_ic_tests_summary(
+                test_window=test_window, methods=["pearson"], plot_top_n=6,
+                factors=factors,
+                bgn_date=bgn_date, stp_date=stp_date,
+                database_structure=database_structure,
+                ic_tests_dir=research_ic_tests_dir,
+                ic_tests_summary_dir=research_ic_tests_summary_dir,
+                days_per_year=252)
     else:
         print("... switch = {} is not a legal option, please check again".format(switch))
