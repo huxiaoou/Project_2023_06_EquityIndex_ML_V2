@@ -27,6 +27,7 @@ factors_args = {
     "cvr_windows": [21, 63, 126, 252],
     "exr_windows": [3, 5, 10, 21],
     "mtm_windows": [21, 63, 126, 252],
+    "pos_windows": test_windows,  # must be the same as test windows
     "sgm_windows": [21, 63, 126, 252],
     "size_windows": [21, 63, 126, 252],
     "skew_windows": [21, 63, 126, 252],
@@ -36,6 +37,7 @@ factors_args = {
     "twc_windows": [3, 5, 10, 21],
 
     "top_props": [0.1, 0.2, 0.5, 1],
+    "top_players_qty": [1, 3, 5],
     "lbds": [0.2, 0.4, 0.6, 0.8],
     "drifts": [1, 2, 3],
 }
@@ -51,6 +53,7 @@ cvp_windows = factors_args["cvp_windows"]
 cvr_windows = factors_args["cvr_windows"]
 exr_windows = factors_args["exr_windows"]
 mtm_windows = factors_args["mtm_windows"]
+pos_windows = factors_args["pos_windows"]
 sgm_windows = factors_args["sgm_windows"]
 size_windows = factors_args["size_windows"]
 skew_windows = factors_args["skew_windows"]
@@ -59,6 +62,7 @@ to_windows = factors_args["to_windows"]
 ts_windows = factors_args["ts_windows"]
 twc_windows = factors_args["twc_windows"]
 top_props = factors_args["top_props"]
+top_players_qty = factors_args["top_players_qty"]
 lbds = factors_args["lbds"]
 drifts = factors_args["drifts"]
 
@@ -85,6 +89,8 @@ fac_sub_grp_cvp = ["CVP{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.pr
 fac_sub_grp_cvr = ["CVR{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(cvr_windows, top_props)]
 fac_sub_grp_exr = ["EXR{:03d}D{:d}".format(_, d) for _, d in ittl.product(exr_windows, drifts)]
 fac_sub_grp_mtm = ["MTM{:03d}".format(_) for _ in mtm_windows] + ["MTM{:03d}ADJ".format(_) for _ in mtm_windows]
+fac_sub_grp_pos = ["POSH{}{:03d}Q{:02d}".format(d, _, t) for d, _, t in ittl.product(["L", "S"], pos_windows, top_players_qty)] + \
+                  ["POSD{}{:03d}Q{:02d}".format(d, _, t) for d, _, t in ittl.product(["L", "S"], pos_windows, top_players_qty)]
 fac_sub_grp_sgm = ["SGM{:03d}".format(_) for _ in sgm_windows]
 fac_sub_grp_size = ["SIZE{:03d}".format(_) for _ in size_windows]
 fac_sub_grp_skew = ["SKEW{:03d}".format(_) for _ in skew_windows]
@@ -97,10 +103,14 @@ fac_sub_grp_twc = ["TWCU{:03d}".format(_) for _ in twc_windows] \
                   + ["TWCT{:03d}".format(_) for _ in twc_windows] \
                   + ["TWCV{:03d}".format(_) for _ in twc_windows]
 
-factors = fac_sub_grp_basis + fac_sub_grp_beta + fac_sub_grp_ts + fac_sub_grp_mtm \
-          + fac_sub_grp_amt + fac_sub_grp_sgm + fac_sub_grp_skew + fac_sub_grp_size + fac_sub_grp_to \
+factors = fac_sub_grp_amp + fac_sub_grp_amt \
+          + fac_sub_grp_basis + fac_sub_grp_beta \
           + fac_sub_grp_csp + fac_sub_grp_csr + fac_sub_grp_ctp + fac_sub_grp_ctr + fac_sub_grp_cvp + fac_sub_grp_cvr \
-          + fac_sub_grp_amp + fac_sub_grp_smt + fac_sub_grp_exr + fac_sub_grp_twc
+          + fac_sub_grp_exr \
+          + fac_sub_grp_mtm \
+          + fac_sub_grp_sgm + fac_sub_grp_size + fac_sub_grp_skew + fac_sub_grp_smt \
+          + fac_sub_grp_to + fac_sub_grp_ts + fac_sub_grp_twc \
+          + fac_sub_grp_pos
 
 # --- simulation
 cost_rate = 5e-4

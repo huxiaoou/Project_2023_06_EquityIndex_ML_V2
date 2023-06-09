@@ -30,6 +30,7 @@ from factors_exposure import cal_fac_exp_beta_mp
 from factors_exposure import cal_fac_exp_cx_mp
 from factors_exposure import cal_fac_exp_exr_mp
 from factors_exposure import cal_fac_exp_mtm_mp
+from factors_exposure import cal_fac_exp_pos_mp
 from factors_exposure import cal_fac_exp_sgm_mp
 from factors_exposure import cal_fac_exp_size_mp
 from factors_exposure import cal_fac_exp_skew_mp
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     args_parser.add_argument("-f", "--factor", type=str, default="", help="""
         optional, must be provided if switch = 'factors_exposure',
         use this to decide which factor, available options = {
-        'amp', 'amt', 'basis', 'beta', 'cx', 'exr', 'mtm', 'sgm', 'size', 'skew', 'smt', 'to', 'ts', 'twc'}
+        'amp', 'amt', 'basis', 'beta', 'cx', 'exr', 'mtm', 'pos', 'sgm', 'size', 'skew', 'smt', 'to', 'ts', 'twc'}
         """)
     args_parser.add_argument("-m", "--mode", type=str, default="", help="""
         run mode, available options = {'o', 'overwrite', 'a', 'append'}
@@ -190,6 +191,18 @@ if __name__ == "__main__":
                 database_structure=database_structure,
                 major_return_dir=major_return_dir,
                 factors_exposure_dir=research_factors_exposure_dir,
+            )
+        elif factor == "pos":
+            cal_fac_exp_pos_mp(
+                proc_num=proc_num,
+                run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                pos_windows=factors_args["pos_windows"], top_players_qty=factors_args["top_players_qty"],
+                instruments_universe=instruments_universe,
+                database_structure=database_structure,
+                factors_exposure_dir=research_factors_exposure_dir,
+                test_returns_dir=research_test_returns_dir,
+                intermediary_dir=research_intermediary_dir,
+                calendar_path=calendar_path,
             )
         elif factor == "sgm":
             cal_fac_exp_sgm_mp(

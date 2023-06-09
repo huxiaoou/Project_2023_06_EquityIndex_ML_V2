@@ -8,6 +8,7 @@ from algs.factor_exposure_beta import fac_exp_alg_beta, fac_exp_alg_beta_diff
 from algs.factor_exposure_cx import fac_exp_alg_cx
 from algs.factor_exposure_exr import fac_exp_alg_exr
 from algs.factor_exposure_mtm import fac_exp_alg_mtm
+from algs.factor_exposure_pos import fac_exp_alg_pos
 from algs.factor_exposure_sgm import fac_exp_alg_sgm
 from algs.factor_exposure_size import fac_exp_alg_size
 from algs.factor_exposure_skew import fac_exp_alg_skew
@@ -205,6 +206,34 @@ def cal_fac_exp_mtm_mp(proc_num: int,
                                database_structure,
                                major_return_dir,
                                factors_exposure_dir))
+    pool.close()
+    pool.join()
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
+    return 0
+
+
+def cal_fac_exp_pos_mp(proc_num: int,
+                       run_mode: str, bgn_date: str, stp_date: str | None,
+                       pos_windows: list[int], top_players_qty: list[int],
+                       instruments_universe: list[str],
+                       database_structure: dict,
+                       factors_exposure_dir: str,
+                       test_returns_dir: str,
+                       intermediary_dir: str,
+                       calendar_path: str):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for p_window, top_player_qty in ittl.product(pos_windows, top_players_qty):
+        pool.apply_async(fac_exp_alg_pos,
+                         args=(run_mode, bgn_date, stp_date,
+                               p_window, top_player_qty,
+                               instruments_universe,
+                               database_structure,
+                               factors_exposure_dir,
+                               test_returns_dir,
+                               intermediary_dir,
+                               calendar_path))
     pool.close()
     pool.join()
     t1 = dt.datetime.now()
