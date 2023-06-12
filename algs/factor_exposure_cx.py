@@ -10,7 +10,7 @@ def cal_corr(t_sub_df: pd.DataFrame, t_x: str, t_y: str, t_sort_var: str, t_top_
     _sorted_df = t_sub_df.sort_values(by=t_sort_var, ascending=False)
     _top_df = _sorted_df.head(t_top_size)
     _r = _top_df[[t_x, t_y]].corr(method="spearman").at[t_x, t_y]
-    return _r
+    return -_r
 
 
 def fac_exp_alg_cx(
