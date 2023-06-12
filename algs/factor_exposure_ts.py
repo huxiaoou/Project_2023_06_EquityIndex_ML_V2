@@ -1,5 +1,6 @@
 import os
 import datetime as dt
+import numpy as np
 import pandas as pd
 from skyrim.whiterun import CCalendar
 from skyrim.falkreath import CLib1Tab1
@@ -9,18 +10,32 @@ from skyrim.falkreath import CManagerLibWriter
 
 def find_price(t_x: pd.Series, t_md_df: pd.DataFrame):
     _trade_date = t_x.name
-    return t_md_df.at[_trade_date, t_x["n_contract"]], t_md_df.at[_trade_date, t_x["d_contract"]]
+    try:
+        n_prc = t_md_df.at[_trade_date, t_x["n_contract"]]
+    except KeyError:
+        print("... Warning! price for {} at {} is not found".format(
+            t_x["n_contract"], _trade_date))
+        n_prc = np.nan
+
+    try:
+        d_prc = t_md_df.at[_trade_date, t_x["d_contract"]]
+    except KeyError:
+        print("... Warning! price for {} at {} is not found".format(
+            t_x["d_contract"], _trade_date))
+        d_prc = np.nan
+    return n_prc, d_prc
 
 
 def cal_roll_return(t_x: pd.Series, t_n_prc_lbl: str, t_d_prc_lbl: str):
     _dlt_month = int(t_x["d_contract"].split(".")[0][-2:]) - int(t_x["n_contract"].split(".")[0][-2:])
     _dlt_month = _dlt_month + (12 if _dlt_month <= 0 else 0)
-    return (t_x[t_n_prc_lbl] / t_x[t_d_prc_lbl] - 1) / _dlt_month * 12
+    return -(t_x[t_n_prc_lbl] / t_x[t_d_prc_lbl] - 1) / _dlt_month * 12
 
 
 def fac_exp_alg_ts(
-        run_mode: str, bgn_date: str, stp_date: str | None,
+        run_mode: str, bgn_date: str, stp_date: str | None, max_win: int,
         instruments_universe: list[str],
+        calendar_path: str,
         database_structure: dict[str, CLib1Tab1],
         major_minor_dir: str,
         md_dir: str,
@@ -31,6 +46,10 @@ def fac_exp_alg_ts(
     if stp_date is None:
         stp_date = (dt.datetime.strptime(bgn_date, "%Y%m%d") + dt.timedelta(days=1)).strftime("%Y%m%d")
 
+    calendar = CCalendar(calendar_path)
+    iter_dates = calendar.get_iter_list(bgn_date, stp_date, True)
+    base_date = calendar.get_next_date(iter_dates[0], -max_win + 1)
+
     # --- init major contracts
     all_factor_dfs = []
     for instrument in instruments_universe:
@@ -40,8 +59,7 @@ def fac_exp_alg_ts(
         md_file = "{}.md.{}.csv.gz".format(instrument, price_type)
         md_path = os.path.join(md_dir, md_file)
         md_df = pd.read_csv(md_path, dtype={"trade_date": str}).set_index("trade_date")
-        shared_bgn_date = max(bgn_date, major_minor_df.index[0], md_df.index[0])
-        filter_dates = (major_minor_df.index >= shared_bgn_date) & (major_minor_df.index < stp_date)
+        filter_dates = (major_minor_df.index >= base_date) & (major_minor_df.index < stp_date)
         factor_df = major_minor_df.loc[filter_dates].copy()
         factor_df["instrument"] = instrument
         factor_df["n_" + price_type], factor_df["d_" + price_type] = zip(*factor_df.apply(find_price, args=(md_df,), axis=1))

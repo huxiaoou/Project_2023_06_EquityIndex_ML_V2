@@ -380,8 +380,9 @@ def cal_fac_exp_ts_mp(proc_num: int,
                       calendar_path: str,
                       price_type: str):
     t0 = dt.datetime.now()
-    fac_exp_alg_ts(run_mode, bgn_date, stp_date,
+    fac_exp_alg_ts(run_mode, bgn_date, stp_date, max(ts_windows),
                    instruments_universe,
+                   calendar_path,
                    database_structure,
                    major_minor_dir,
                    md_dir,
