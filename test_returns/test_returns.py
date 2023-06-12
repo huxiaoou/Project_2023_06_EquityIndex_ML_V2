@@ -18,6 +18,7 @@ def lookup_av_ratio(db: CManagerLibReader, date: str, contract: str):
     try:
         return m01_df.at[contract, "amount"].iloc[0] / m01_df.at[contract, "volume"].iloc[0]
     except KeyError:
+        print("... Warning! KeyError when lookup av ratio at {} for {}".format(date, contract))
         return np.nan
 
 

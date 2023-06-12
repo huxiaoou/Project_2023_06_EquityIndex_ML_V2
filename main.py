@@ -55,8 +55,9 @@ if __name__ == "__main__":
     args_parser.add_argument("-b", "--bgn", type=str, help="""
         begin date, may be different according to different switches, suggestion of different switch:
         {   
-            "m01": "20150416",
-            "pub": "20150416",
+            "preprocess/m01": "20150416",
+            "preprocess/pub": "20150416",
+            "test_returns": "20150701",
             "others": "20160101", 
         }
         """)
