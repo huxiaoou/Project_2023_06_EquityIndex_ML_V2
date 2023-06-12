@@ -81,8 +81,9 @@ def cal_fac_exp_basis_mp(proc_num: int,
                          factors_exposure_dir: str,
                          calendar_path: str):
     t0 = dt.datetime.now()
-    fac_exp_alg_basis(run_mode, bgn_date, stp_date,
+    fac_exp_alg_basis(run_mode, bgn_date, stp_date, max(basis_windows),
                       instruments_universe,
+                      calendar_path,
                       database_structure,
                       major_return_dir,
                       equity_index_by_instrument_dir,
@@ -115,8 +116,9 @@ def cal_fac_exp_beta_mp(proc_num: int,
     pool = mp.Pool(processes=proc_num)
     for p_window in beta_windows:
         pool.apply_async(fac_exp_alg_beta,
-                         args=(run_mode, bgn_date, stp_date, p_window,
+                         args=(run_mode, bgn_date, stp_date, p_window, max(beta_windows),
                                instruments_universe,
+                               calendar_path,
                                database_structure,
                                major_return_dir,
                                equity_index_by_instrument_dir,

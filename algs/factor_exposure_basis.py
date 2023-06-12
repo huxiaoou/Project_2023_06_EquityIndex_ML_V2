@@ -8,8 +8,9 @@ from skyrim.falkreath import CManagerLibWriter
 
 
 def fac_exp_alg_basis(
-        run_mode: str, bgn_date: str, stp_date: str | None,
+        run_mode: str, bgn_date: str, stp_date: str | None, max_win: int,
         instruments_universe: list[str],
+        calendar_path: str,
         database_structure: dict[str, CLib1Tab1],
         major_return_dir: str,
         equity_index_by_instrument_dir: str,
@@ -18,6 +19,10 @@ def fac_exp_alg_basis(
     factor_lbl = "BASIS"
     if stp_date is None:
         stp_date = (dt.datetime.strptime(bgn_date, "%Y%m%d") + dt.timedelta(days=1)).strftime("%Y%m%d")
+
+    calendar = CCalendar(calendar_path)
+    iter_dates = calendar.get_iter_list(bgn_date, stp_date, True)
+    base_date = calendar.get_next_date(iter_dates[0], -max_win + 1)
 
     equity_index_code_mapper = {
         "IH.CFE": "000016.SH",
@@ -32,15 +37,15 @@ def fac_exp_alg_basis(
         major_return_file = "major_return.{}.close.csv.gz".format(instrument)
         major_return_path = os.path.join(major_return_dir, major_return_file)
         major_return_df = pd.read_csv(major_return_path, dtype={"trade_date": str}).set_index("trade_date")
-        fiter_dates = (major_return_df.index >= bgn_date) & (major_return_df.index < stp_date)
-        selected_major_return_df = major_return_df.loc[fiter_dates, ["n_contract", "close"]].round(2)
+        filter_dates = (major_return_df.index >= base_date) & (major_return_df.index < stp_date)
+        selected_major_return_df = major_return_df.loc[filter_dates, ["n_contract", "close"]].round(2)
 
         equity_index_code = equity_index_code_mapper[instrument]
         spot_data_file = "{}.csv".format(equity_index_code)
         spot_data_path = os.path.join(equity_index_by_instrument_dir, spot_data_file)
         spot_df = pd.read_csv(spot_data_path, dtype={"trade_date": str}).set_index("trade_date")
-        fiter_dates = (spot_df.index >= bgn_date) & (spot_df.index < stp_date)
-        selected_spot_df = spot_df.loc[fiter_dates, ["close"]]
+        filter_dates = (spot_df.index >= base_date) & (spot_df.index < stp_date)
+        selected_spot_df = spot_df.loc[filter_dates, ["close"]]
 
         factor_df = pd.merge(
             left=selected_major_return_df, right=selected_spot_df,
@@ -48,7 +53,7 @@ def fac_exp_alg_basis(
             suffixes=("_f", "_s")
         )
         factor_df["instrument"] = instrument
-        factor_df[factor_lbl] = factor_df["close_f"] / factor_df["close_s"] - 1
+        factor_df[factor_lbl] = factor_df["close_s"] / factor_df["close_f"] - 1
         all_factor_dfs.append(factor_df[["instrument", factor_lbl]])
 
     # --- reorganize
@@ -78,7 +83,6 @@ def fac_exp_alg_basis_ma_and_diff(
 ):
     src_lbl = "BASIS"
     factor_lbl_ma, factor_lbl_diff = "BASIS_M{:03d}".format(basis_window), "BASIS_D{:03d}".format(basis_window)
-
     if stp_date is None:
         stp_date = (dt.datetime.strptime(bgn_date, "%Y%m%d") + dt.timedelta(days=1)).strftime("%Y%m%d")
 

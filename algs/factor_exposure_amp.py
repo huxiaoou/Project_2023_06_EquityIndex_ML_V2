@@ -10,7 +10,7 @@ def cal_amp(t_sub_df: pd.DataFrame, t_x: str, t_sort_var: str, t_top_size: int):
     _amp_h = _sorted_df.head(t_top_size)[t_x].mean()
     _amp_l = _sorted_df.tail(t_top_size)[t_x].mean()
     _amp_d = _amp_h - _amp_l
-    return _amp_h, _amp_l, _amp_d
+    return -_amp_h, _amp_l, -_amp_d
 
 
 def fac_exp_alg_amp(

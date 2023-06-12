@@ -8,8 +8,9 @@ from skyrim.whiterun import CCalendar
 
 
 def fac_exp_alg_beta(
-        run_mode: str, bgn_date: str, stp_date: str | None, beta_window: int,
+        run_mode: str, bgn_date: str, stp_date: str | None, beta_window: int, max_win: int,
         instruments_universe: list[str],
+        calendar_path: str,
         database_structure: dict[str, CLib1Tab1],
         major_return_dir: str,
         equity_index_by_instrument_dir: str,
@@ -18,6 +19,10 @@ def fac_exp_alg_beta(
     factor_lbl = "BETA{:03d}".format(beta_window)
     if stp_date is None:
         stp_date = (dt.datetime.strptime(bgn_date, "%Y%m%d") + dt.timedelta(days=1)).strftime("%Y%m%d")
+
+    calendar = CCalendar(calendar_path)
+    iter_dates = calendar.get_iter_list(bgn_date, stp_date, True)
+    base_date = calendar.get_next_date(iter_dates[0], -beta_window - max_win)
 
     # --- load market return
     market_index_file = "881001.WI.csv"
@@ -30,16 +35,16 @@ def fac_exp_alg_beta(
         major_return_file = "major_return.{}.close.csv.gz".format(instrument)
         major_return_path = os.path.join(major_return_dir, major_return_file)
         major_return_df = pd.read_csv(major_return_path, dtype={"trade_date": str}).set_index("trade_date")
-        major_return_df["market"] = (market_index_df["close"] / market_index_df["pre_close"] - 1) * 100
-        major_return_df["xy"] = (major_return_df["major_return"] * major_return_df["market"]).rolling(window=beta_window).mean()
-        major_return_df["xx"] = (major_return_df["market"] * major_return_df["market"]).rolling(window=beta_window).mean()
-        major_return_df["y"] = major_return_df["major_return"].rolling(window=beta_window).mean()
-        major_return_df["x"] = major_return_df["market"].rolling(window=beta_window).mean()
-        major_return_df["cov_xy"] = major_return_df["xy"] - major_return_df["x"] * major_return_df["y"]
-        major_return_df["cov_xx"] = major_return_df["xx"] - major_return_df["x"] * major_return_df["x"]
-        major_return_df[factor_lbl] = major_return_df["cov_xy"] / major_return_df["cov_xx"]
-        fiter_dates = (major_return_df.index >= bgn_date) & (major_return_df.index < stp_date)
-        factor_df = major_return_df.loc[fiter_dates, [factor_lbl]].copy()
+        filter_dates = (major_return_df.index >= base_date) & (major_return_df.index < stp_date)
+        factor_df = major_return_df.loc[filter_dates, ["major_return"]].copy()
+        factor_df["market"] = (market_index_df["close"] / market_index_df["pre_close"] - 1) * 100
+        factor_df["xy"] = (factor_df["major_return"] * factor_df["market"]).rolling(window=beta_window).mean()
+        factor_df["xx"] = (factor_df["market"] * factor_df["market"]).rolling(window=beta_window).mean()
+        factor_df["y"] = factor_df["major_return"].rolling(window=beta_window).mean()
+        factor_df["x"] = factor_df["market"].rolling(window=beta_window).mean()
+        factor_df["cov_xy"] = factor_df["xy"] - factor_df["x"] * factor_df["y"]
+        factor_df["cov_xx"] = factor_df["xx"] - factor_df["x"] * factor_df["x"]
+        factor_df[factor_lbl] = factor_df["cov_xy"] / factor_df["cov_xx"]
         factor_df["instrument"] = instrument
         all_factor_dfs.append(factor_df[["instrument", factor_lbl]])
 
