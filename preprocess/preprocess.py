@@ -136,7 +136,8 @@ def update_public_info(
     md_db = CManagerLibReader(t_db_save_dir=futures_md_dir, t_db_name=futures_md_db_name + ".db")
     md_db.set_default(t_default_table_name=md_table.m_table_name)
 
-    w = [0.4, 0.3, 0.2, 0.2]
+    # w = [0.4, 0.3, 0.2, 0.2]
+    w = [0.25, 0.25, 0.25, 0.25]
     dlt_dfs = []
     for trade_date in calendar.get_iter_list(bgn_date, stp_date, True):
         raw_pos_file = "positions.E.{}.csv.gz".format(trade_date)

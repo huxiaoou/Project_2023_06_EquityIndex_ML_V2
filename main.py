@@ -41,16 +41,28 @@ from factors_exposure import cal_fac_exp_twc_mp
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser(description="Entry point to run all")
-    args_parser.add_argument("-s", "--switch", type=str, help="""
+    args_parser.add_argument("-w", "--switch", type=str, help="""
         use this to decide which parts to run, available options = {'preprocess', 'test_returns', 'factors_exposure'}
         """)
     args_parser.add_argument("-f", "--factor", type=str, default="", help="""
-        optional, must be provided if switch = 'factors_exposure',
+        optional, must be provided if switch = {'preprocess', 'factors_exposure'},
         use this to decide which factor, available options = {
         'amp', 'amt', 'basis', 'beta', 'cx', 'exr', 'mtm', 'pos', 'sgm', 'size', 'skew', 'smt', 'to', 'ts', 'twc'}
         """)
-    args_parser.add_argument("-m", "--mode", type=str, default="", help="""
+    args_parser.add_argument("-m", "--mode", type=str, help="""
         run mode, available options = {'o', 'overwrite', 'a', 'append'}
+        """)
+    args_parser.add_argument("-b", "--bgn", type=str, help="""
+        begin date, may be different according to different switches, suggestion of different switch:
+        {   
+            "m01": "20150416",
+            "pub": "20150416",
+            "others": "20160101", 
+        }
+        """)
+    args_parser.add_argument("-s", "--stp", type=str, help="""
+        stop date, not included, usually it would be the day after the last trade date, such as
+        "20230612" if last trade date is "20230609"  
         """)
     args_parser.add_argument("-p", "--process", type=int, default=5, help="""
         number of process to be called when calculating, default = 5
@@ -59,16 +71,14 @@ if __name__ == "__main__":
     switch = args.switch.upper()
     factor = args.factor.lower()
     run_mode = args.mode.upper()
+    bgn_date, stp_date = args.bgn, args.stp
     proc_num = args.process
-
-    bgn_date, stp_date = "20160101", "20230529"
-    m01_bgn_date, m01_stp_date = "20150416", "20230529"
 
     if switch in ["PP", "PREPROCESS"]:
         if factor == "split":
             split_spot_daily_k(equity_index_by_instrument_dir, equity_indexes)
         elif factor == "minute":
-            update_major_minute(run_mode=run_mode, bgn_date=m01_bgn_date, stp_date=m01_stp_date,
+            update_major_minute(run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
                                 instruments=instruments_universe, calendar_path=calendar_path,
                                 futures_md_structure_path=futures_md_structure_path,
                                 futures_em01_db_name=futures_em01_db_name,
@@ -77,28 +87,18 @@ if __name__ == "__main__":
                                 intermediary_dir=research_intermediary_dir,
                                 database_structure=database_structure)
         elif factor == "pub":
-            update_public_info(value_type="pos",
-                               run_mode=run_mode, bgn_date=m01_bgn_date, stp_date=m01_stp_date,
-                               instruments=instruments_universe,
-                               calendar_path=calendar_path,
-                               futures_md_structure_path=futures_md_structure_path,
-                               futures_md_db_name=futures_md_db_name,
-                               futures_md_dir=futures_md_dir,
-                               futures_fundamental_intermediary_dir=futures_fundamental_intermediary_dir,
-                               intermediary_dir=research_intermediary_dir,
-                               database_structure=database_structure
-                               )
-            update_public_info(value_type="delta",
-                               run_mode=run_mode, bgn_date=m01_bgn_date, stp_date=m01_stp_date,
-                               instruments=instruments_universe,
-                               calendar_path=calendar_path,
-                               futures_md_structure_path=futures_md_structure_path,
-                               futures_md_db_name=futures_md_db_name,
-                               futures_md_dir=futures_md_dir,
-                               futures_fundamental_intermediary_dir=futures_fundamental_intermediary_dir,
-                               intermediary_dir=research_intermediary_dir,
-                               database_structure=database_structure
-                               )
+            for value_type in ["pos", "delta"]:
+                update_public_info(value_type=value_type,
+                                   run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+                                   instruments=instruments_universe,
+                                   calendar_path=calendar_path,
+                                   futures_md_structure_path=futures_md_structure_path,
+                                   futures_md_db_name=futures_md_db_name,
+                                   futures_md_dir=futures_md_dir,
+                                   futures_fundamental_intermediary_dir=futures_fundamental_intermediary_dir,
+                                   intermediary_dir=research_intermediary_dir,
+                                   database_structure=database_structure
+                                   )
     elif switch in ["TR", "TEST_RETURNS"]:
         cal_test_returns_mp(
             proc_num=proc_num,
