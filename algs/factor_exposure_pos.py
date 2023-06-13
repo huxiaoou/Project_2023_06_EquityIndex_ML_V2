@@ -106,8 +106,8 @@ def fac_exp_alg_pos(
                 ds_smart_players = ds_rolling_df.loc[model_date, ds_nan_indicator.loc[model_date]].sort_values(ascending=False).head(top_player_qty).index
             hl_prediction = hl_rolling_df.loc[trade_date, hl_smart_players].mean()
             hs_prediction = hs_rolling_df.loc[trade_date, hs_smart_players].mean()
-            dl_prediction = dl_rolling_df.loc[trade_date, dl_smart_players].mean()
-            ds_prediction = ds_rolling_df.loc[trade_date, ds_smart_players].mean()
+            dl_prediction = -dl_rolling_df.loc[trade_date, dl_smart_players].mean()
+            ds_prediction = -ds_rolling_df.loc[trade_date, ds_smart_players].mean()
             r_hl_data[trade_date], r_hs_data[trade_date] = hl_prediction, hs_prediction
             r_dl_data[trade_date], r_ds_data[trade_date] = dl_prediction, ds_prediction
 

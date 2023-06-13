@@ -37,7 +37,7 @@ factors_args = {
     "twc_windows": [3, 5, 10, 21, 42, 63],
 
     "top_props": [0.1, 0.2, 0.5, 1],
-    "top_players_qty": [1, 3, 5],
+    "top_players_qty": [1, 2, 3, 5],
     "lbds": [0.2, 0.4, 0.6, 0.8],
     "drifts": [1, 2, 3],
 }
