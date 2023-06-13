@@ -12,8 +12,10 @@ from skyrim.whiterun import CCalendar
 def cal_corr_by_date(df: pd.DataFrame, x: str, y: str):
     _rp = df[[x, y]].corr(method="pearson").at[x, y]
     _rs = df[[x, y]].corr(method="spearman").at[x, y]
-    _rch = df.loc[["IC.CFE", "IH.CFE"], [x, y]].corr().at[x, y]
-    return _rp, _rs, (_rch + 1) / 2
+    _rch = 1 if (df.loc["IC.CFE", [x, y]] - df.loc["IH.CFE", [x, y]]).product() > 0 else 0
+    _rcf = 1 if (df.loc["IC.CFE", [x, y]] - df.loc["IF.CFE", [x, y]]).product() > 0 else 0
+    _rfh = 1 if (df.loc["IF.CFE", [x, y]] - df.loc["IH.CFE", [x, y]]).product() > 0 else 0
+    return _rp, _rs, _rch, _rcf, _rfh
 
 
 def shift_fac_exp(df: pd.DataFrame, row: str, col: str, val: str, shift_win: int):
@@ -74,14 +76,15 @@ def ic_test_single_factor(factor_lbl: str, test_window: int,
         how="right"
     ).set_index("instrument")
     res_srs = ic_test_input_df.groupby(by="trade_date").apply(cal_corr_by_date, x="value_e", y="value_r")
-    pr_srs, sr_srs, ch_srs = zip(*res_srs)
+    pr_srs, sr_srs, ch_srs, cf_srs, fh_srs = zip(*res_srs)
     ic_test_df = pd.DataFrame({
         "pearson": pr_srs,
         "spearman": sr_srs,
         "ch": ch_srs,
+        "cf": cf_srs,
+        "fh": fh_srs,
     }, index=res_srs.index)
     ic_test_lib.update(t_update_df=ic_test_df, t_using_index=True)
-
     ic_test_lib.close()
     factor_lib.close()
     test_return_lib.close()

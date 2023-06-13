@@ -26,8 +26,8 @@ factors_args = {
     "cvp_windows": [21, 63, 126, 252],
     "cvr_windows": [21, 63, 126, 252],
     "exr_windows": [10, 21, 42, 63],
-    "mtm_windows": [21, 63, 126, 252],
-    "pos_windows": test_windows,  # must be the same as test windows
+    "mtm_windows": [5, 10, 21, 63, 126, 252],
+    "pos_windows": [1, 2, 3, 5],  # must be a subset of test windows
     "sgm_windows": [21, 63, 126, 252],
     "size_windows": [21, 63, 126, 252],
     "skew_windows": [21, 63, 126, 252],

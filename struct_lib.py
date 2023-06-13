@@ -36,7 +36,8 @@ database_structure.update({
         t_tab=CTable({
             "table_name": z,
             "primary_keys": {"trade_date": "TEXT"},
-            "value_columns": {"pearson": "REAL", "spearman": "REAL", "CH": "REAL"},
+            "value_columns": {"pearson": "REAL", "spearman": "REAL",
+                              "CH": "REAL", "CF": "REAL", "FH": "REAL"},
         })
     ) for z, tw in ittl.product(factors, test_windows)
 })

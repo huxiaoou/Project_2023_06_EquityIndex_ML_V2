@@ -58,7 +58,8 @@ if __name__ == "__main__":
             "preprocess/m01": "20150416",
             "preprocess/pub": "20150416",
             "test_returns": "20150701",
-            "others": "20160101", 
+            "factor_exposures": "20160101", 
+            "ic_tests": "20160601", 
         }
         """)
     args_parser.add_argument("-s", "--stp", type=str, help="""
