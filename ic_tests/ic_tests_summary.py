@@ -6,9 +6,9 @@ from skyrim.winterhold import plot_lines
 
 
 def cal_ic_tests_summary(
-        test_window: int, methods: list[str],
-        factors: list[str],
+        test_window: int, factors: list[str],
         bgn_date: str, stp_date: str,
+        methods: list[str],
         plot_top_n: int,
         database_structure: dict[str, CLib1Tab1],
         ic_tests_dir: str,
@@ -55,7 +55,7 @@ def cal_ic_tests_summary(
             })
 
     for method, method_data in statistics_data.items():
-        sum_df = pd.DataFrame(method_data).sort_values("propCH", ascending=False)
+        sum_df = pd.DataFrame(method_data).sort_values("ICIR", ascending=False)
         sum_file = "ic_tests_summary-TW{:03d}-{}.csv.gz".format(test_window, method)
         sum_path = os.path.join(ic_tests_summary_dir, sum_file)
         sum_df.to_csv(sum_path, index=False, float_format="%.4f")

@@ -34,7 +34,7 @@ factors_args = {
     "smt_windows": [5, 10, 21, 42, 63],
     "to_windows": [21, 63, 126, 252],
     "ts_windows": [21, 63, 126, 252],
-    "twc_windows": [3, 5, 10, 21],
+    "twc_windows": [3, 5, 10, 21, 42, 63],
 
     "top_props": [0.1, 0.2, 0.5, 1],
     "top_players_qty": [1, 3, 5],
