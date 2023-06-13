@@ -17,8 +17,8 @@ def cal_smart(t_sub_df: pd.DataFrame, t_sort_var: str, t_lbd: float):
     smart_df = _sorted_df.head(n)
     if (amt_sum := smart_df["amount"].sum()) > 0:
         w = smart_df["amount"] / amt_sum
-        smart_p = smart_df["vwap"] @ w / tot_vwap - 1
-        smart_r = smart_df["m01_return_cls"] @ w - tot_ret
+        smart_p = -smart_df["vwap"] @ w / tot_vwap + 1
+        smart_r = -smart_df["m01_return_cls"] @ w + tot_ret
         return smart_p, smart_r
     else:
         print("... Warning! Sum of volume of smart df is ZERO")

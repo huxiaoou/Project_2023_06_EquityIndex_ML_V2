@@ -31,7 +31,7 @@ factors_args = {
     "sgm_windows": [21, 63, 126, 252],
     "size_windows": [21, 63, 126, 252],
     "skew_windows": [21, 63, 126, 252],
-    "smt_windows": [3, 5, 10, 21],
+    "smt_windows": [5, 10, 21, 42, 63],
     "to_windows": [21, 63, 126, 252],
     "ts_windows": [21, 63, 126, 252],
     "twc_windows": [3, 5, 10, 21],
