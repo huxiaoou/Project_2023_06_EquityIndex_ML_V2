@@ -64,7 +64,7 @@ def fac_exp_alg_cx(
         major_return_path = os.path.join(major_return_dir, major_return_file)
         major_return_df = pd.read_csv(major_return_path, dtype={"trade_date": str}).set_index("trade_date")
         if cx.upper() in ["CSP", "CSR"]:
-            major_return_df[x] = major_return_df["major_return"].rolling(window=cx_window).std()
+            major_return_df[x] = major_return_df["high"] / major_return_df["low"] - 1
         elif cx.upper() in ["CTP", "CTR"]:
             major_return_df[x] = major_return_df["volume"] / major_return_df["oi"]
         r_data = {}
