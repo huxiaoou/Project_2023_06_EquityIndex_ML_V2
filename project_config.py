@@ -25,7 +25,7 @@ factors_args = {
     "ctr_windows": [21, 63, 126, 252],
     "cvp_windows": [21, 63, 126, 252],
     "cvr_windows": [21, 63, 126, 252],
-    "exr_windows": [3, 5, 10, 21],
+    "exr_windows": [10, 21, 42, 63],
     "mtm_windows": [21, 63, 126, 252],
     "pos_windows": test_windows,  # must be the same as test windows
     "sgm_windows": [21, 63, 126, 252],
@@ -87,7 +87,9 @@ fac_sub_grp_ctp = ["CTP{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.pr
 fac_sub_grp_ctr = ["CTR{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(ctr_windows, top_props)]
 fac_sub_grp_cvp = ["CVP{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(cvp_windows, top_props)]
 fac_sub_grp_cvr = ["CVR{:03d}T{:02d}".format(_, int(p * 10)) for _, p in ittl.product(cvr_windows, top_props)]
-fac_sub_grp_exr = ["EXR{:03d}D{:d}".format(_, d) for _, d in ittl.product(exr_windows, drifts)]
+fac_sub_grp_exr = ["EXR{:03d}".format(_) for _ in exr_windows] \
+                  + ["DXR{:03d}D{:d}".format(_, d) for _, d in ittl.product(exr_windows, drifts)] \
+                  + ["EXR{:03d}D{:d}".format(_, d) for _, d in ittl.product(exr_windows, drifts)]
 fac_sub_grp_mtm = ["MTM{:03d}".format(_) for _ in mtm_windows] + ["MTM{:03d}ADJ".format(_) for _ in mtm_windows]
 fac_sub_grp_pos = ["POSH{}{:03d}Q{:02d}".format(d, _, t) for d, _, t in ittl.product(["L", "S"], pos_windows, top_players_qty)] + \
                   ["POSD{}{:03d}Q{:02d}".format(d, _, t) for d, _, t in ittl.product(["L", "S"], pos_windows, top_players_qty)]

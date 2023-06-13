@@ -175,10 +175,10 @@ def cal_fac_exp_exr_mp(proc_num: int,
                        calendar_path: str):
     t0 = dt.datetime.now()
     pool = mp.Pool(processes=proc_num)
-    for p_window, drift in ittl.product(exr_windows, drifts):
+    for p_window in exr_windows:
         pool.apply_async(fac_exp_alg_exr,
                          args=(run_mode, bgn_date, stp_date,
-                               p_window, drift,
+                               p_window, drifts,
                                instruments_universe,
                                database_structure,
                                factors_exposure_dir,
