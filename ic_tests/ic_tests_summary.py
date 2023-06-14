@@ -30,7 +30,7 @@ def cal_ic_tests_summary(
         ic_df = ic_test_lib.read_by_conditions(t_conditions=[
             ("trade_date", ">=", bgn_date),
             ("trade_date", "<", stp_date),
-        ], t_value_columns=["trade_date", "pearson", "spearman", "CH"]).set_index("trade_date")
+        ], t_value_columns=["trade_date", "pearson", "spearman", "CH", "CF", "FH"]).set_index("trade_date")
         ic_test_lib.close()
 
         obs = len(ic_df)
@@ -43,15 +43,19 @@ def cal_ic_tests_summary(
             prop_pos = sum(ic_srs > 0) / obs
             prop_neg = sum(ic_srs < 0) / obs
             prop_ch = ic_df["CH"].mean()
+            prop_cf = ic_df["CF"].mean()
+            prop_fh = ic_df["FH"].mean()
             statistics_data[method].append({
                 "factor": factor_lbl,
                 "obs": obs,
                 "ICMean": mu,
                 "ICStd": sd,
                 "ICIR": icir,
-                "propPos": prop_pos,
-                "propNeg": prop_neg,
-                "propCH": prop_ch
+                "ICPropPos": prop_pos,
+                "ICPropNeg": prop_neg,
+                "propCH": prop_ch,
+                "propCF": prop_cf,
+                "propFH": prop_fh,
             })
 
     for method, method_data in statistics_data.items():
@@ -60,17 +64,20 @@ def cal_ic_tests_summary(
         sum_path = os.path.join(ic_tests_summary_dir, sum_file)
         sum_df.to_csv(sum_path, index=False, float_format="%.4f")
 
-        all_ic_df = pd.DataFrame(ic_data[method])
-        all_ic_df_cumsum = all_ic_df.fillna(0).cumsum() / np.sqrt(test_window)
-        factors_to_plot = sum_df["factor"].head(plot_top_n).tolist() + sum_df["factor"].tail(plot_top_n).tolist()
-        plot_df = all_ic_df_cumsum[factors_to_plot]
-        plot_lines(
-            t_plot_df=plot_df, t_fig_name="ic_cumsum-TW{:03d}-{}".format(test_window, method),
-            t_save_dir=ic_tests_summary_dir, t_colormap="jet", t_ylim=(-150, 90),
-        )
+        factors_to_plot = sum_df.loc[sum_df["ICIR"].abs() >= 1.0, "factor"].tolist()
+        if factors_to_plot:
+            all_ic_df = pd.DataFrame(ic_data[method])
+            all_ic_df_cumsum = all_ic_df.fillna(0).cumsum() / np.sqrt(test_window)
+            plot_df = all_ic_df_cumsum[factors_to_plot]
+            plot_lines(
+                t_plot_df=plot_df, t_fig_name="ic_cumsum-TW{:03d}-{}".format(test_window, method),
+                t_save_dir=ic_tests_summary_dir, t_colormap="jet", # t_ylim=(-150, 90),
+            )
 
-        print("-" * 120)
-        print("| test_window = {:>3d} | method = {:>12s} |".format(test_window, method))
-        print(sum_df.head(plot_top_n))
-        print(sum_df.tail(plot_top_n))
+            print("-" * 120)
+            print("| test_window = {:>3d} | method = {:>12s} |".format(test_window, method))
+            print(sum_df.head(plot_top_n))
+            print(sum_df.tail(plot_top_n))
+        else:
+            print("... not enough factors are picked when method = {} with test_window = {}".format(method, test_window))
     return 0

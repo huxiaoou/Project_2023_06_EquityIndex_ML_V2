@@ -300,7 +300,7 @@ if __name__ == "__main__":
             cal_ic_tests_summary(
                 test_window=test_window, factors=factors,
                 bgn_date=bgn_date, stp_date=stp_date,
-                methods=["pearson"], plot_top_n=6,
+                methods=["pearson", "spearman"], plot_top_n=6,
                 database_structure=database_structure,
                 ic_tests_dir=research_ic_tests_dir,
                 ic_tests_summary_dir=research_ic_tests_summary_dir,
