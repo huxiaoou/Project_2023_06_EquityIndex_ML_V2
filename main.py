@@ -6,11 +6,14 @@
     }
 """
 import argparse
+import itertools as ittl
 from preprocess.preprocess import split_spot_daily_k, update_major_minute, update_public_info
 from test_returns.test_returns import cal_test_returns_mp
-from ic_tests.ic_tests import cal_ic_tests_mp
-from ic_tests.ic_tests_summary import cal_ic_tests_summary
-from gp_tests.gp_tests import cal_gp_tests_mp
+from tests.ic_tests import cal_ic_tests_mp
+from tests.ic_tests_summary import cal_ic_tests_summary
+from tests.gp_tests import cal_gp_tests_mp
+from tests.gp_tests_summary import cal_gp_tests_summary
+
 from project_config import equity_indexes, mapper_futures_to_index
 from project_config import instruments_universe, test_windows, universe_options
 from project_config import factors, factors_args
@@ -63,7 +66,8 @@ if __name__ == "__main__":
             "preprocess/pub": "20150416",
             "test_returns": "20150701",
             "factor_exposures": "20160101", 
-            "ic_tests": "20160601", 
+            "tests": "20160601", 
+            "tests_summary": "20160601", 
         }
         """)
     args_parser.add_argument("-s", "--stp", type=str, help="""
@@ -320,5 +324,13 @@ if __name__ == "__main__":
             test_returns_dir=research_test_returns_dir,
             database_structure=database_structure,
             calendar_path=calendar_path)
+    elif switch in ["GPSUM"]:
+        for test_window, uid in ittl.product(test_windows, universe_options):
+            cal_gp_tests_summary(
+                test_window=test_window, uid=uid, factors=factors,
+                bgn_date=bgn_date, stp_date=stp_date,
+                database_structure=database_structure,
+                gp_tests_dir=research_gp_tests_dir,
+                gp_tests_summary_dir=research_gp_tests_summary_dir)
     else:
         print("... switch = {} is not a legal option, please check again".format(switch))
