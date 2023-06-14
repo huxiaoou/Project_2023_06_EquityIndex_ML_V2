@@ -114,6 +114,13 @@ factors = fac_sub_grp_amp + fac_sub_grp_amt \
           + fac_sub_grp_to + fac_sub_grp_ts + fac_sub_grp_twc \
           + fac_sub_grp_pos
 
+universe_options = {
+    "U3": ["IC.CFE", "IF.CFE", "IH.CFE"],
+    "UCH": ["IC.CFE", "IH.CFE"],
+    "UCF": ["IC.CFE", "IF.CFE"],
+    "UFH": ["IF.CFE", "IH.CFE"],
+}
+
 # --- simulation
 cost_rate = 5e-4
 

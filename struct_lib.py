@@ -2,6 +2,7 @@ import itertools as ittl
 from skyrim.falkreath import CLib1Tab1, CTable
 from project_config import test_windows
 from project_config import factors
+from project_config import universe_options
 
 database_structure: dict[str, CLib1Tab1] = {}
 
@@ -40,6 +41,18 @@ database_structure.update({
                               "CH": "REAL", "CF": "REAL", "FH": "REAL"},
         })
     ) for z, tw in ittl.product(factors, test_windows)
+})
+
+# --- gp tests by factors
+database_structure.update({
+    "gp-{}-TW{:03d}-{}".format(z, tw, u): CLib1Tab1(
+        t_lib_name="gp-{}-TW{:03d}-{}.db".format(z, tw, u),
+        t_tab=CTable({
+            "table_name": z,
+            "primary_keys": {"trade_date": "TEXT"},
+            "value_columns": {"RL": "REAL", "RS": "REAL", "RH": "REAL"},
+        })
+    ) for z, tw, u in ittl.product(factors, test_windows, universe_options)
 })
 
 # --- em01 by major contract
