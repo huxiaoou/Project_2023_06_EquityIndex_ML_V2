@@ -55,6 +55,18 @@ database_structure.update({
     ) for z, tw, u in ittl.product(factors, test_windows, universe_options)
 })
 
+# --- signals
+database_structure.update({
+    z: CLib1Tab1(
+        t_lib_name=z + ".db",
+        t_tab=CTable({
+            "table_name": z,
+            "primary_keys": {"trade_date": "TEXT", "instrument": "TEXT"},
+            "value_columns": {"value": "REAL"},
+        })
+    ) for z in ["S{:03d}".format(_) for _ in range(20)]
+})
+
 # --- em01 by major contract
 database_structure.update({
     "em01_major": CLib1Tab1(
