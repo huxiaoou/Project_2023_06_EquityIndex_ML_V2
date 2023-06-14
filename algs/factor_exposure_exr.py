@@ -10,13 +10,13 @@ from skyrim.falkreath import CManagerLibWriter
 def find_extreme_return(t_df: pd.DataFrame, t_ret: str, t_drifts: list[int]):
     ret_min, ret_max, ret_median = t_df[t_ret].min(), t_df[t_ret].max(), t_df[t_ret].median()
     if (ret_max + ret_min) > (2 * ret_median):
-        idx_exr, exr = t_df[t_ret].argmax(), ret_max
+        idx_exr, exr = t_df[t_ret].argmax(), -ret_max
     else:
-        idx_exr, exr = t_df[t_ret].argmin(), ret_min
+        idx_exr, exr = t_df[t_ret].argmin(), -ret_min
     dxrs = []
     for drift in t_drifts:
         idx_dxr = idx_exr - drift
-        dxr = t_df[t_ret].iloc[idx_dxr] if idx_exr >= 0 else exr
+        dxr = -t_df[t_ret].iloc[idx_dxr] if idx_exr >= 0 else exr
         dxrs.append(dxr)
     return exr, dxrs
 
@@ -76,17 +76,15 @@ def fac_exp_alg_exr(
         all_factor_dfs.append(exr_dxr_df)
     all_exr_dxr_df = pd.concat(all_factor_dfs, axis=0, ignore_index=False)
     exr_df = pd.pivot_table(data=all_exr_dxr_df, index="trade_date", columns="instrument", values="exr")
-    dxr_dfs = {
+    dxr_d_dfs = {
         drift: pd.pivot_table(data=all_exr_dxr_df, index="trade_date", columns="instrument", values="d" + str(drift))
         for drift in drifts
     }
-    exr_rank_df = exr_df.rank(axis=1, ascending=False)
-    dxr_d_rank_dfs = {drift: dxr_dfs[drift].rank(axis=1, ascending=False) for drift in drifts}
-    exr_d_rank_dfs = {drift: (exr_rank_df + dxr_d_rank_dfs[drift]) * 0.5 for drift in drifts}
+    exr_d_dfs = {drift: (exr_df + dxr_d_dfs[drift] * np.sqrt(2)) * 0.5 for drift in drifts}
 
     for factor_lbl, factor_df in zip(
             [factor_exr_lbl] + factor_dxr_d_lbls + factor_exr_d_lbls,
-            [exr_rank_df] + list(dxr_d_rank_dfs.values()) + list(exr_d_rank_dfs.values())
+            [exr_df] + list(dxr_d_dfs.values()) + list(exr_d_dfs.values())
     ):
         df: pd.DataFrame = factor_df[factor_df.index >= bgn_date]
         all_factor_df = df.stack().reset_index(level=1).sort_index(ascending=True)

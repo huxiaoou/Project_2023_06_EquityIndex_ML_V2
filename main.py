@@ -14,6 +14,7 @@ from project_config import equity_indexes, mapper_futures_to_index
 from project_config import instruments_universe, test_windows
 from project_config import factors, factors_args
 from project_config import manager_cx_windows
+# from project_config import fac_sub_grp_exr  # for test and debug
 from struct_lib import database_structure
 from project_setup import calendar_path, futures_instru_info_path
 from project_setup import major_minor_dir, major_return_dir, md_by_instru_dir
@@ -289,6 +290,7 @@ if __name__ == "__main__":
         cal_ic_tests_mp(
             proc_num=5,
             factor_lbls=factors, test_windows=test_windows,
+            # factor_lbls=fac_sub_grp_exr, test_windows=test_windows,
             run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
             ic_tests_dir=research_ic_tests_dir,
             factors_exposure_dir=research_factors_exposure_dir,
