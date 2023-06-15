@@ -1,15 +1,16 @@
 import os
+import datetime as dt
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
 from skyrim.falkreath import CLib1Tab1, CManagerLibReader
 from skyrim.winterhold import plot_lines
 
 
 def cal_ic_tests_summary(
         test_window: int, factors: list[str],
+        methods: list[str], plot_top_n: int,
         bgn_date: str, stp_date: str,
-        methods: list[str],
-        plot_top_n: int,
         database_structure: dict[str, CLib1Tab1],
         ic_tests_dir: str,
         ic_tests_summary_dir: str,
@@ -84,4 +85,26 @@ def cal_ic_tests_summary(
             print(sum_df.tail(plot_top_n))
         else:
             print("... not enough factors are picked when method = {} with test_window = {}".format(method, test_window))
+    return 0
+
+
+def cal_ic_tests_summary_mp(
+        proc_num: int,
+        test_windows: list[int], factors: list[str],
+        methods: list[str], plot_top_n: int,
+        bgn_date: str, stp_date: str | None,
+        **kwargs
+):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for test_window in test_windows:
+        pool.apply_async(
+            cal_ic_tests_summary,
+            args=(test_window, factors, methods, plot_top_n, bgn_date, stp_date),
+            kwds=kwargs
+        )
+    pool.close()
+    pool.join()
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
     return 0

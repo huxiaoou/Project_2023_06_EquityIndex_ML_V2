@@ -6,19 +6,19 @@
     }
 """
 import argparse
-import itertools as ittl
 from preprocess.preprocess import split_spot_daily_k, update_major_minute, update_public_info
 from test_returns.test_returns import cal_test_returns_mp
 from tests.ic_tests import cal_ic_tests_mp
-from tests.ic_tests_summary import cal_ic_tests_summary
+from tests.ic_tests_summary import cal_ic_tests_summary_mp
 from tests.gp_tests import cal_gp_tests_mp
-from tests.gp_tests_summary import cal_gp_tests_summary
-from signals.signals import cal_signals_mp
+from tests.gp_tests_summary import cal_gp_tests_summary_mp
+from signals.signals import cal_signals_mp, cal_simulation_mp
 
 from project_config import equity_indexes, mapper_futures_to_index
 from project_config import instruments_universe, test_windows, universe_options
 from project_config import factors, factors_args
 from project_config import manager_cx_windows
+from project_config import cost_rate
 from struct_lib import database_structure
 from struct_signal import signals_structure
 from project_setup import calendar_path, futures_instru_info_path
@@ -306,15 +306,15 @@ if __name__ == "__main__":
             database_structure=database_structure,
             calendar_path=calendar_path)
     elif switch in ["ICSUM"]:
-        for test_window in test_windows:
-            cal_ic_tests_summary(
-                test_window=test_window, factors=factors,
-                bgn_date=bgn_date, stp_date=stp_date,
-                methods=["pearson", "spearman"], plot_top_n=6,
-                database_structure=database_structure,
-                ic_tests_dir=research_ic_tests_dir,
-                ic_tests_summary_dir=research_ic_tests_summary_dir,
-                days_per_year=252)
+        cal_ic_tests_summary_mp(
+            proc_num=proc_num,
+            test_windows=test_windows, factors=factors,
+            methods=["pearson", "spearman"], plot_top_n=6,
+            bgn_date=bgn_date, stp_date=stp_date,
+            database_structure=database_structure,
+            ic_tests_dir=research_ic_tests_dir,
+            ic_tests_summary_dir=research_ic_tests_summary_dir,
+            days_per_year=252)
     elif switch in ["GP"]:
         cal_gp_tests_mp(
             proc_num=5,
@@ -326,13 +326,13 @@ if __name__ == "__main__":
             database_structure=database_structure,
             calendar_path=calendar_path)
     elif switch in ["GPSUM"]:
-        for test_window, uid in ittl.product(test_windows, universe_options):
-            cal_gp_tests_summary(
-                test_window=test_window, uid=uid, factors=factors,
-                bgn_date=bgn_date, stp_date=stp_date,
-                database_structure=database_structure,
-                gp_tests_dir=research_gp_tests_dir,
-                gp_tests_summary_dir=research_gp_tests_summary_dir)
+        cal_gp_tests_summary_mp(
+            proc_num=proc_num,
+            test_windows=test_windows, universe_options=universe_options, factors=factors,
+            bgn_date=bgn_date, stp_date=stp_date,
+            database_structure=database_structure,
+            gp_tests_dir=research_gp_tests_dir,
+            gp_tests_summary_dir=research_gp_tests_summary_dir)
     elif switch in ["SIG"]:
         cal_signals_mp(
             proc_num=5, sids=["S000", "S001"],
@@ -342,6 +342,17 @@ if __name__ == "__main__":
             database_structure=database_structure,
             factors_exposure_dir=research_factors_exposure_dir,
             signals_dir=research_signals_dir,
+            calendar_path=calendar_path,
+        )
+    elif switch in ["SIMU"]:
+        cal_simulation_mp(
+            proc_num=5, sids=["S000", "S001"], cost_rate=cost_rate,
+            signals_structure=signals_structure,
+            universe_options=universe_options,
+            run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
+            database_structure=database_structure,
+            signals_dir=research_signals_dir,
+            test_returns_dir=research_test_returns_dir,
             calendar_path=calendar_path,
         )
     else:

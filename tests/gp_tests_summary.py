@@ -1,8 +1,9 @@
 import os
-import numpy as np
+import datetime as dt
 import pandas as pd
+import multiprocessing as mp
+import itertools as ittl
 from skyrim.falkreath import CLib1Tab1, CManagerLibReader
-from skyrim.winterhold import plot_lines
 from skyrim.riften import CNAV
 
 
@@ -31,7 +32,7 @@ def cal_gp_tests_summary(
         ret_df = gp_df / test_window
         gp_test_lib.close()
 
-        nav = CNAV(t_raw_nav_srs=ret_df["RH"], t_annual_rf_rate=0, t_freq="D", t_type="RET")
+        nav = CNAV(t_raw_nav_srs=ret_df["RH"], t_annual_rf_rate=0, t_freq="D", t_type="RET", t_turnover_period=test_window)
         nav.cal_all_indicators()
         res = nav.to_dict(t_type="eng")
         res.update({"factor": factor_lbl})
@@ -44,9 +45,30 @@ def cal_gp_tests_summary(
     statistics_df.to_csv(statistics_path, float_format="%.6f")
 
     print("=" * 120)
-    print(test_window, uid)
+    print("test window = {}, uid = {}".format(test_window, uid))
     print("-" * 120)
     print(statistics_df.head(5))
     print("-" * 120)
 
+    return 0
+
+
+def cal_gp_tests_summary_mp(
+        proc_num: int,
+        test_windows: list[int], universe_options: dict[str, list[str]], factors: list[str],
+        bgn_date: str, stp_date: str | None,
+        **kwargs
+):
+    t0 = dt.datetime.now()
+    pool = mp.Pool(processes=proc_num)
+    for test_window, uid in ittl.product(test_windows, universe_options):
+        pool.apply_async(
+            cal_gp_tests_summary,
+            args=(test_window, uid, factors, bgn_date, stp_date),
+            kwds=kwargs
+        )
+    pool.close()
+    pool.join()
+    t1 = dt.datetime.now()
+    print("... total time consuming: {:.2f} seconds".format((t1 - t0).total_seconds()))
     return 0
