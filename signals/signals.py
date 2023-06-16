@@ -5,6 +5,8 @@ import multiprocessing as mp
 from skyrim.falkreath import CLib1Tab1
 from skyrim.falkreath import CManagerLibReader, CManagerLibWriter
 from skyrim.whiterun import CCalendar
+from skyrim.riften import CNAV
+from skyrim.winterhold import plot_lines
 
 
 def cal_simu_ret_by_date(df: pd.DataFrame, fe: str, tr: str):
@@ -24,7 +26,8 @@ class CSignal(object):
         self.m_sid = t_sid
         self.m_mov_ave_win = t_sig_struct["mov_ave_win"]
         self.m_uid = t_sig_struct["uid"]
-        self.m_factors = t_sig_struct["factors"]
+        self.m_factors, self.m_weights = zip(*t_sig_struct["factors"])
+        self.m_weights = pd.Series(data=self.m_weights / np.sum(self.m_weights), index=self.m_factors)
         self.m_universe = t_universe_options[self.m_uid]
         self.m_u_size = len(self.m_universe)
         k = int(self.m_u_size / 2)
@@ -34,6 +37,10 @@ class CSignal(object):
     def convert(self, xs: pd.Series, d: dict):
         d[xs.name] = pd.Series(data=self.m_wh, index=xs.sort_values(ascending=False).index)
         return 0
+
+    def sumprod_weights(self, x: pd.DataFrame):
+        xt = x.set_index("factor").T
+        return xt @ self.m_weights[xt.columns]
 
     def merge_signals(self, run_mode: str, bgn_date: str, stp_date: str,
                       database_structure: dict[str, CLib1Tab1],
@@ -64,8 +71,11 @@ class CSignal(object):
             fac_sig_raw_dfs.append(fac_sig_raw_df)
 
         sig_raw_df = pd.concat(fac_sig_raw_dfs, axis=0, ignore_index=False)
-        sig_grp_df = sig_raw_df[self.m_universe].groupby(by=lambda z: z).sum()  # use lambda to use index
-        sig_rol_df = sig_grp_df.rolling(window=self.m_mov_ave_win).mean()
+        sig_grp_df = sig_raw_df[self.m_universe + ["factor"]].groupby(lambda z: z).apply(self.sumprod_weights)
+        # sig_rol_df = sig_grp_df.rolling(window=self.m_mov_ave_win).mean()
+        sig_nrm_df = sig_grp_df.div(sig_grp_df.abs().sum(axis=1), axis=0).fillna(0)
+        sig_rol_df = sig_nrm_df.rolling(window=self.m_mov_ave_win).mean()
+
         sig_df = sig_rol_df.div(sig_rol_df.abs().sum(axis=1), axis=0).fillna(0)
         sig_sav_df = sig_df.stack().reset_index(level=1)
 
@@ -83,6 +93,7 @@ class CSignal(object):
                    database_structure: dict[str, CLib1Tab1],
                    signals_dir: str,
                    test_returns_dir: str,
+                   simulations_dir: str,
                    calendar_path: str):
         fix_test_window = 1
 
@@ -129,11 +140,17 @@ class CSignal(object):
             "rawRet": res_srs,
             "dltWgt": dlt_wgt_srs,
         })
-        x = simu_df["netRet"] = simu_df["rawRet"] - simu_df["dltWgt"] * cost_rate
+        simu_df["netRet"] = simu_df["rawRet"] - simu_df["dltWgt"] * cost_rate
+        nav = CNAV(t_raw_nav_srs=simu_df["netRet"], t_annual_rf_rate=0, t_freq="D", t_type="RET")
+        nav.cal_all_indicators()
         print("...", self.m_sid, "simulated",
-              "mu = {:.6f}".format(x.mean()),
-              "sd = {:.6f}".format(x.std()),
-              "sr = {:.6f}".format(x.mean() / x.std() * (252 ** 0.5)), )
+              "mu  = {:.6f}".format(nav.m_return_mean / 100),
+              "sd  = {:.6f}".format(nav.m_return_std / 100),
+              "sr  = {:.3f}".format(nav.m_sharpe_ratio),
+              "cr  = {:.3f}".format(nav.m_calmar_ratio),
+              "mdd = {:.3f}".format(nav.m_max_drawdown_scale),)
+
+        plot_lines(t_plot_df=simu_df[["rawRet", "netRet"]].cumsum(), t_fig_name="nav-" + self.m_sid, t_save_dir=simulations_dir)
         return 0
 
 

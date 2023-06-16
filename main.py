@@ -12,6 +12,7 @@ from tests.ic_tests import cal_ic_tests_mp
 from tests.ic_tests_summary import cal_ic_tests_summary_mp
 from tests.gp_tests import cal_gp_tests_mp
 from tests.gp_tests_summary import cal_gp_tests_summary_mp
+from tests.gp_tests_corr import cal_gp_tests_corr
 from signals.signals import cal_signals_mp, cal_simulation_mp
 
 from project_config import equity_indexes, mapper_futures_to_index
@@ -28,7 +29,7 @@ from project_setup import futures_md_db_name, futures_em01_db_name
 from project_setup import futures_fundamental_intermediary_dir
 from project_setup import equity_index_by_instrument_dir
 from project_setup import research_test_returns_dir, research_factors_exposure_dir
-from project_setup import research_intermediary_dir, research_signals_dir
+from project_setup import research_intermediary_dir, research_signals_dir, research_simulations_dir
 from project_setup import research_ic_tests_dir, research_ic_tests_summary_dir
 from project_setup import research_gp_tests_dir, research_gp_tests_summary_dir
 from factors_exposure import cal_fac_exp_amp_mp
@@ -69,6 +70,8 @@ if __name__ == "__main__":
             "factor_exposures": "20160101", 
             "tests": "20160601", 
             "tests_summary": "20160601", 
+            "signals": "20160601", 
+            "simu": "20160601", 
         }
         """)
     args_parser.add_argument("-s", "--stp", type=str, help="""
@@ -333,9 +336,26 @@ if __name__ == "__main__":
             database_structure=database_structure,
             gp_tests_dir=research_gp_tests_dir,
             gp_tests_summary_dir=research_gp_tests_summary_dir)
+    elif switch in ["GPCOR"]:
+        cal_gp_tests_corr(
+            test_window=10, uid="U3", factors=[
+                "EXR042D3",
+                "CTP063T10",
+                "AMPH063T02",
+                "SKEW126",
+                "BASIS_D021",
+                "BETA_D063",
+                "CTR126T01",
+                "TS_D252",
+                "TWCV021",
+            ],
+            bgn_date=bgn_date, stp_date=stp_date,
+            database_structure=database_structure,
+            gp_tests_dir=research_gp_tests_dir,
+            gp_tests_summary_dir=research_gp_tests_summary_dir)
     elif switch in ["SIG"]:
         cal_signals_mp(
-            proc_num=5, sids=["S000", "S001"],
+            proc_num=5, sids=["S000", "S001", "S002", "S003", "S004", "S005"],
             signals_structure=signals_structure,
             universe_options=universe_options,
             run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
@@ -346,13 +366,14 @@ if __name__ == "__main__":
         )
     elif switch in ["SIMU"]:
         cal_simulation_mp(
-            proc_num=5, sids=["S000", "S001"], cost_rate=cost_rate,
+            proc_num=5, sids=["S000", "S001", "S002", "S003", "S004", "S005"], cost_rate=cost_rate,
             signals_structure=signals_structure,
             universe_options=universe_options,
             run_mode=run_mode, bgn_date=bgn_date, stp_date=stp_date,
             database_structure=database_structure,
             signals_dir=research_signals_dir,
             test_returns_dir=research_test_returns_dir,
+            simulations_dir=research_simulations_dir,
             calendar_path=calendar_path,
         )
     else:
