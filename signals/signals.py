@@ -141,7 +141,7 @@ class CSignal(object):
             "dltWgt": dlt_wgt_srs,
         })
         simu_df["netRet"] = simu_df["rawRet"] - simu_df["dltWgt"] * cost_rate
-        nav = CNAV(t_raw_nav_srs=simu_df["netRet"], t_annual_rf_rate=0, t_freq="D", t_type="RET")
+        nav = CNAV(t_raw_nav_srs=simu_df["netRet"], t_annual_rf_rate=0, t_type="RET")
         nav.cal_all_indicators()
         print("...", self.m_sid, "simulated",
               "mu  = {:.6f}".format(nav.m_return_mean / 100),
